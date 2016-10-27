@@ -1,0 +1,3 @@
+20160913 Versionbox mit Webview. Scrollbar vorhanden?
+
+20160909 Versionbox und Aboutbox im Menü

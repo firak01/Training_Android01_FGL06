@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="de.fgl.tryout.android.training001"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <!-- FGL: Weil mit dem SDK Manager die 23er Version installiert wurde, gibt es Fehlermeldungen. Darum die Version 23 hier als Zielversion eintragen -->
+    <!-- <uses-sdk android:minSdkVersion="4" android:targetSdkVersion="23" /> -->
+    <uses-sdk
+        android:minSdkVersion="21"
+        android:targetSdkVersion="23" />
+
+    <!--
+        FGL: 
+        Es war notwendig android:theme hinzuzufügen auf Activity Ebene
+        wenn man das auf Application Ebene entfernt.
+        
+        If your Java is using ActionBarActivity the theme must extend Theme.AppCompat. 
+        There are a handful of built in themes that do extend Theme.AppCompat or you could extend it yourself and modify it. 
+        Without removing the ActionBarActivity parent you cannot get around using the Theme.AppCompat.
+
+		Lösung:
+		In styles.xml verwende DarkActionBar
+		<style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">		
+    -->
+    <uses-permission android:name="android.permission.INTERNET" /><!-- FGL: 20161016 - Damit das WebSearch-Fragment auf das Internet zugreifen darf. Ohne das gibt es einen Fehler "net err cache misses" -->
+    
+    <!-- https://developer.android.com/training/basics/data-storage/files.html#InternalVsExternalStorage -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /><!-- FGL: 20161023 - Damit kann beim nun funktionierenden Druck, ein PDF erstelltes Dokument in den Download - Ordner gespeichert werden -->
+    
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppBaseTheme" >
+        
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        
+        <!-- Damit eine Menüleiste angezeigt wird muss die Activity in der Java Klasse die ActionBarActivity extenden.
+             Desweiteren muss für den zurück Button oben die ParentActivity hier im Layout angegeben werden. -->
+        <activity
+            android:name=".DisplayMessageActivity"
+            android:label="@string/title_activity_display_message"
+            android:parentActivityName=".MainActivity" >
+
+            <!-- Parent activity meta-data to support 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="de.fgl.tryout.android.training001.MainActivity" />
+        </activity>
+        <!-- FGL: Damit es aussieht wie ein Dialog, aber: Die Klasse der anzuzeigenden Activity muss von ActionBarActivity nach Activity geändert werden -->
+        <!-- android:theme="@android:style/Theme.Dialog" -->
+
+
+        <!--
+             FGL 20160727: Weiterentwicklung im ...FGL04 Projekt.
+             Diese Activity wird mit .createActivityForResult() aufgerufen.
+        -->
+        <activity
+            android:name=".DisplayMessageActivityForResult"
+            android:label="@string/title_activity_display_message_activity_for_result" >
+        </activity>
+        
+        
+        <activity
+            android:name=".DisplayWebviewActivityForVersion"
+            android:label="@string/title_activity_display_webview_activty_for_version" >
+        </activity>
+        
+        <!-- Ich will einen Zurueck - button in der menueleiste haben. 
+             Darum versuch wie bei displayMessageActivity einen parent Namen anzugeben. 
+             DAS Klappt-->
+        <activity
+            android:name=".DisplayWebviewActivityForSearch"
+            android:label="@string/title_activity_display_search_web"
+            android:parentActivityName=".MainActivity" >
+
+            <!-- Parent activity meta-data to support 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="de.fgl.tryout.android.training001.MainActivity" />
+        </activity>        
+    </application>
+
+</manifest>

@@ -1,0 +1,2 @@
+- Starte andere Aktivitäten und übergib Parameter.
+- Menüleiste und Dialogboxen starten.

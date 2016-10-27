@@ -1,0 +1,50 @@
+<resources>
+
+    <!--
+        Base application theme, dependent on API level. This theme is replaced
+        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
+    -->
+    <!-- FGL 20140514 : Develop / Training / Adding the action bar / use an android theme -->
+<!--     <style name="AppBaseTheme" parent="Theme.AppCompat.Light"> -->
+		<!-- FGL: for the dark theme -->
+<!-- 	<style name="AppBaseTheme" parent="Theme.AppCompat"> -->
+		<style name="AppBaseTheme" parent="Theme.AppCompat.Light.DarkActionBar">	
+        <!--
+            Theme customizations available in newer API levels can go in
+            res/values-vXX/styles.xml, while customizations related to
+            backward-compatibility can go here.
+        -->
+        
+        <!-- FGL : Overlaying the Action Bar -->
+        <item name="android:windowActionBarOverlay">true</item>
+        
+    </style>
+    
+		
+		<!-- FGL : Styling the action Bar -->
+		<!-- the theme applied to the application or activity -->
+    <style name="CustomActionBarTheme"
+           parent="Theme.AppCompat.Light.DarkActionBar">	
+    </style>
+<!-- 	   <style name="CustomActionBarTheme" -->
+<!--           parent="Theme.AppCompat.Light.DarkActionBar"> -->
+<!--         <item name="android:actionBarStyle">@style/MyActionBar</item> -->
+<!--     </style> -->
+
+    <!-- ActionBar styles -->
+<!--     <style name="MyActionBar" -->
+<!--            parent="@android:style/Widget.Holo.Light.ActionBar.Solid.Inverse"> -->
+<!--         <item name="android:background">@drawable/logo_fritz_tv</item> -->
+<!--     </style> -->
+	<style name="MyActionBar"
+           parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:background">@drawable/logo_fritz_tv</item>
+    </style>
+		
+
+    <!-- Application theme. -->
+    <style name="AppTheme" parent="AppBaseTheme">
+        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+    </style>
+
+</resources>
