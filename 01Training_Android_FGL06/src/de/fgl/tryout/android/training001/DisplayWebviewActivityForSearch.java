@@ -172,6 +172,11 @@ public class DisplayWebviewActivityForSearch extends AppCompatActivity {
 		if (id == R.id.action_settings) {
 			return true;
 		}
+		
+		if (id == R.id.action_end) {
+			finish();			
+		}
+		
 		if (id == R.id.action_print){
 			Log.d("FGLTEST", "Methode DisplayActivityWebViewActivityForSearch.onOptionsItemSelected(..) - PRINT.");
 			

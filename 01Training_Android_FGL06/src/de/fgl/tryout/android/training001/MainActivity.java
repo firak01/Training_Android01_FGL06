@@ -110,6 +110,10 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 		int id = item.getItemId();
 		Log.d("FGLSTATE", "onOptionsItemSelected() id='"+id+"'.");
 		
+		if (id == R.id.action_end) {
+			finish();			
+		}
+		
 		if (id == R.id.action_settings) {
 			return true;
 		}

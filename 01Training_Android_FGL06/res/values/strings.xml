@@ -31,4 +31,6 @@
     <!-- Web - Suchseite  -->
     <string name="action_print">Print</string>
 
+    <!-- FGL06: Beenden der Applikation -->
+    <string name="action_end">End</string>                
 </resources>
