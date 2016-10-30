@@ -35,11 +35,11 @@ public class DisplayMessageActivity extends AppCompatActivity {
 	 */
 	private void setMessageCurrent(String message) {
 		this.sMessageCurrent= message;
-		Log.d("FGLSTATE", this.getClass().getSimpleName()+". setMessageCurrent() f�r '" + message + "'");
+		Log.d("FGLSTATE", this.getClass().getSimpleName()+". setMessageCurrent() für '" + message + "'");
 		
 	}
 	private String getMessageCurrent(){
-		Log.d("FGLSTATE", this.getClass().getSimpleName()+". getMessageCurrent() f�r '" + this.sMessageCurrent + "'");
+		Log.d("FGLSTATE", this.getClass().getSimpleName()+". getMessageCurrent() für '" + this.sMessageCurrent + "'");
 		return this.sMessageCurrent;		
 	}
 	
@@ -110,7 +110,7 @@ Log.d("FGLTEST", "Methode sDisplayActivity.onCreate(..) - minSdkVersion is 11 or
 		}
 	}
 
-	//Wird f�r diese App nicht ben�tigt
+	//Wird für diese App nicht benötigt
 //	@Override
 //	public boolean onCreateOptionsMenu(Menu menu) {
 //
@@ -133,18 +133,18 @@ Log.d("FGLTEST", "Methode sDisplayActivity.onCreate(..) - minSdkVersion is 11 or
 //		return super.onOptionsItemSelected(item);
 		
 		
-		//### Fang den "Zur�ck" Button der ActivityActionBar ab. #####
-		//Ziel: �bergib an die Ausgangsaktivit�t wieder den Wert. 
-		//a) Wenn �ber den Zur�ck-Button des Ger�ts gearbeitet wird, ist es nicht notwendig. 
+		//### Fang den "Zurück" Button der ActivityActionBar ab. #####
+		//Ziel: Übergib an die Ausgangsaktivität wieder den Wert. 
+		//a) Wenn über den Zurück-Button des Geräts gearbeitet wird, ist es nicht notwendig. 
 		//   Dann bleibt der Wert als Variable in der Activity vorhanden.
-		//b) Wenn �ber den Zur�ck-Button in der ActionBar gearbeitet wird, sind die Werte in onResume() nur entgegenzunehmen,
+		//b) Wenn über den Zurück-Button in der ActionBar gearbeitet wird, sind die Werte in onResume() nur entgegenzunehmen,
 		//   durch einen Intent, in dem man den Wert speichert.
 		//c) IDEE: Versuche aus der Hauptaktivit�t mal die DisplayMessageActivity02 aufzurufen mit
 		//         startActivityForResult(). Vielleicht geht es dann einfacher.
 		//
 		if(id==16908332){
 			//If Abfrage, weil in der Switch-Case Anweisung der Vergleich nicht zu klappen scheint.
-			Log.d("FGLSTATE", "onOptionsItemSelected() f�r speziell definierte actionBarId gefunden.");
+			Log.d("FGLSTATE", "onOptionsItemSelected() für speziell definierte actionBarId gefunden.");
 			
 			//Versuch X: Gib an die aufgerufene Funktion den Wert zur�ck
     		Bundle bundle = new Bundle();
@@ -164,6 +164,9 @@ Log.d("FGLTEST", "Methode sDisplayActivity.onCreate(..) - minSdkVersion is 11 or
 			
 			// Handle presses on the action bar items
 		    switch (id) {
+		    	case R.id.action_end:
+					//finish(); //Aber: Beendet nur diese Activity, nicht aber die Start Activity
+					finishAffinity(); //Beendet auch alle "Parent Activities", Ab Android 4.1.		
 		        case R.id.action_search:
 		            openSearch();
 		            return true;

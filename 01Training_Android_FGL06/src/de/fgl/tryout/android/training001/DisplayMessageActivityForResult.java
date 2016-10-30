@@ -23,11 +23,11 @@ public class DisplayMessageActivityForResult extends Activity {
 	 */
 	private void setMessageCurrent(String message) {
 		this.sMessageCurrent= message;
-		Log.d("FGLSTATE", this.getClass().getSimpleName()+". setMessageCurrent() für '" + message + "'");
+		Log.d("FGLSTATE", this.getClass().getSimpleName()+". setMessageCurrent() fÃ¼r '" + message + "'");
 		
 	}
 	private String getMessageCurrent(){
-		Log.d("FGLSTATE", this.getClass().getSimpleName()+". getMessageCurrent() für '" + this.sMessageCurrent + "'");
+		Log.d("FGLSTATE", this.getClass().getSimpleName()+". getMessageCurrent() fÃ¼r '" + this.sMessageCurrent + "'");
 		return this.sMessageCurrent;		
 	}
 	
@@ -150,40 +150,43 @@ public class DisplayMessageActivityForResult extends Activity {
 //			return super.onOptionsItemSelected(item);
 			
 			
-			//### Fang den "Zurück" Button der ActivityActionBar ab. #####
-			//Ziel: Übergib an die Ausgangsaktivität wieder den Wert. 
-			//a) Wenn über den Zurück-Button des Geräts gearbeitet wird, ist es nicht notwendig. 
+			//### Fang den "ZurÃ¼ck" Button der ActivityActionBar ab. #####
+			//Ziel: Ã¼bergib an die AusgangsaktivitÃ¤t wieder den Wert. 
+			//a) Wenn Ã¼ber den ZurÃ¼ck-Button des GerÃ¤ts gearbeitet wird, ist es nicht notwendig. 
 			//   Dann bleibt der Wert als Variable in der Activity vorhanden.
-			//b) Wenn über den Zurück-Button in der ActionBar gearbeitet wird, sind die Werte in onResume() nur entgegenzunehmen,
+			//b) Wenn Ã¼ber den ZurÃ¼ck-Button in der ActionBar gearbeitet wird, sind die Werte in onResume() nur entgegenzunehmen,
 			//   durch einen Intent, in dem man den Wert speichert.
-			//c) IDEE: Versuche aus der Hauptaktivität mal die DisplayMessageActivity02 aufzurufen mit
+			//c) IDEE: Versuche aus der HauptaktivitÃ¤t mal die DisplayMessageActivity02 aufzurufen mit
 			//         startActivityForResult(). Vielleicht geht es dann einfacher.
 			//
 			
 		
 			if(id==16908332){
 				//If Abfrage, weil in der Switch-Case Anweisung der Vergleich nicht zu klappen scheint.
-//				Log.d("FGLSTATE", "onOptionsItemSelected() für speziell definierte actionBarId gefunden.");
+//				Log.d("FGLSTATE", "onOptionsItemSelected() fÃ¼r speziell definierte actionBarId gefunden.");
 				
 				
 				//Merke: In dieser Activity wird das per "Result" gemacht. Darum keine neue Activity aufrufen.
-				//Versuch X: Gib an die aufgerufene Funktion den Wert zurück
+				//Versuch X: Gib an die aufgerufene Funktion den Wert zurÃ¼ck
 //	    		Bundle bundle = new Bundle();
 //	            bundle.putString(this.RESUME_MESSAGE_BUNDLE, this.getMessageCurrent());
-	            //natürlich nicht in den Intent Packen, der dieser Activity beim Start mitgegeben worden ist getIntent().putExtras(bundle);
+	            //natï¿½rlich nicht in den Intent Packen, der dieser Activity beim Start mitgegeben worden ist getIntent().putExtras(bundle);
 	            	            
 	            //Start an intent mit dem Ziel diesen in der onResume Methpde entgegenzunehmen.
 //	    		Intent intent = new Intent(this, MainActivity.class);	    		
 //	    		intent.putExtras(bundle);	    		
 //	    		startActivity(intent);
 	    		
-				//Alternativ zum Starten einer neuen Activity hier finish() aufrufen und darin den Result zurückgeben.
+				//Alternativ zum Starten einer neuen Activity hier finish() aufrufen und darin den Result zurï¿½ckgeben.
 				finish();
 			}else{
-				Log.d("FGLSTATE", "onOptionsItemSelected() für speziell definierte actionBarId NICHT gefunden.");
+				Log.d("FGLSTATE", "onOptionsItemSelected() fÃ¼r speziell definierte actionBarId NICHT gefunden.");
 				
 				// Handle presses on the action bar items
 			    switch (id) {
+				    case R.id.action_end:
+						//finish(); //Aber: Beendet nur diese Activity, nicht aber die Start Activity
+						finishAffinity(); //Beendet auch alle "Parent Activities", Ab Android 4.1.					
 			        case R.id.action_search:
 			            //openSearch();
 			            return true;
@@ -191,16 +194,16 @@ public class DisplayMessageActivityForResult extends Activity {
 			           // openSettings();
 			            return true;
 			        case R.id.home:
-			        	Log.d("FGLSTATE", "onOptionsItemSelected() für HOME item.id= '" + id + "'");
+			        	Log.d("FGLSTATE", "onOptionsItemSelected() fÃ¼r HOME item.id= '" + id + "'");
 			        case R.id.homeAsUp:
-			        	Log.d("FGLSTATE", "onOptionsItemSelected() für HOMEASUP item.id= '" + id + "'");
+			        	Log.d("FGLSTATE", "onOptionsItemSelected() fÃ¼r HOMEASUP item.id= '" + id + "'");
 			        case R.id.up:
-			        	Log.d("FGLSTATE", "onOptionsItemSelected() für HUP item.id= '" + id + "'");
+			        	Log.d("FGLSTATE", "onOptionsItemSelected() fÃ¼r HUP item.id= '" + id + "'");
 			        case 16908332:
-			        	//DAS WIRD AUS irgendeinem Grund nicht ausgeführt. Darum in den if-Abfrage vorneweg verlagert.
-			        	Log.d("FGLSTATE", "onOptionsItemSelected() für speziell definierte actionBarId ohne in R-Klasse vohranden zu sein: item.id= '" + id + "'");	        		        
+			        	//DAS WIRD AUS irgendeinem Grund nicht ausgefï¿½hrt. Darum in den if-Abfrage vorneweg verlagert.
+			        	Log.d("FGLSTATE", "onOptionsItemSelected() fÃ¼r speziell definierte actionBarId ohne in R-Klasse vohranden zu sein: item.id= '" + id + "'");	        		        
 			        default:
-			        	Log.d("FGLSTATE", "onOptionsItemSelected() für default item.id= '" + id + "'");
+			        	Log.d("FGLSTATE", "onOptionsItemSelected() fÃ¼r default item.id= '" + id + "'");
 			            return super.onOptionsItemSelected(item);
 			    }
 			}
@@ -208,7 +211,7 @@ public class DisplayMessageActivityForResult extends Activity {
 			return true;
 		}
 		
-		//FGL für neue Buttons in der Action Bar notwendig
+		//FGL fï¿½r neue Buttons in der Action Bar notwendig
 		@Override
 		public boolean onCreateOptionsMenu(Menu menu) {
 		    // Inflate the menu items for use in the action bar

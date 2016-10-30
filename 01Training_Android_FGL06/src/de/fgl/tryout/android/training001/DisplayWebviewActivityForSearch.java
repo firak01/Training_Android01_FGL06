@@ -174,7 +174,8 @@ public class DisplayWebviewActivityForSearch extends AppCompatActivity {
 		}
 		
 		if (id == R.id.action_end) {
-			finish();			
+			//finish(); //Aber: Beendet nur diese Activity, nicht aber die Start Activity
+			finishAffinity(); //Beendet auch alle "Parent Activities", Ab Android 4.1.
 		}
 		
 		if (id == R.id.action_print){

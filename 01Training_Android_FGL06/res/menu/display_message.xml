@@ -14,5 +14,12 @@
         android:orderInCategory="100"
         android:title="@string/action_settings"
         app:showAsAction="never"/>
+    
+    <!-- FGL06: Beenden Link -->
+    <item android:id="@+id/action_end"
+        android:icon="@drawable/ic_action_end"
+        android:orderInCategory="101"
+        android:title="@string/action_end"
+        app:showAsAction="never"/>
 
 </menu>

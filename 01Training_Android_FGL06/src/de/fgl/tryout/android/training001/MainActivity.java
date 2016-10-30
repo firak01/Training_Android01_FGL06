@@ -77,18 +77,22 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 			//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Gerät verbunden sein.
 			//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
 			//            und Eclipse neu starten muss.
-			Log.d("FGLSTATE", "onCreate() wurde aktiviert. MIT SAVEDINSTANCESTATE vorhanden");
+			Log.d("FGLSTATE", "MainActivity.onCreate() wurde aktiviert. MIT SAVEDINSTANCESTATE vorhanden");
 			 
         	//Notwendiger Zweig um Persistierung zurückzuholen. Siehe auch onResume().
         	String sMessageCurrent = (String) savedInstanceState.getSerializable(MyMessageHandler.KEY_MESSAGE_CURRENT);
-        	Log.d("FGLSTATE", "onCreate(): sMessageCurrent = " + sMessageCurrent);
+        	Log.d("FGLSTATE", "MainActivity.onCreate(): sMessageCurrent = " + sMessageCurrent);
 			
         	if(!StringZZZ.isEmptyNull(sMessageCurrent)&& !StringZZZ.isBlank(sMessageCurrent) & !StringZZZ.isWhitespace(sMessageCurrent)){
 	        	this.setMessageCurrent(sMessageCurrent);
 	        	
 	        	//Sollte man nun irgendwie den String zurück-/einsetzen?
 	        	EditText editText = (EditText) findViewById(R.id.edit_message);
-	    		editText.setText(sMessageCurrent + " (wiederhergestellt)");
+	        	if(editText==null){
+	        		Log.d("FGLSTATE", "MainActivity.onCreate(): EditText - Element im UI nicht gefunden.");	    			
+	        	}else{
+	        		editText.setText(sMessageCurrent + " (wiederhergestellt)");
+	        	}
         	}        	
         }
 	}//END MainActivity.onCreate(...)
@@ -234,11 +238,11 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 	 */
 	private void setMessageCurrent(String message) {
 		this.sMessageCurrent= message;
-		Log.d("FGLSTATE", "setMessageCurrent() für '" + message + "'");
+		Log.d("FGLSTATE", "MainActivity.setMessageCurrent() für '" + message + "'");
 		
 	}
 	private String getMessageCurrent(){
-		Log.d("FGLSTATE", "getMessageCurrent() für '" + this.sMessageCurrent + "'");
+		Log.d("FGLSTATE", "MainActivity.getMessageCurrent() für '" + this.sMessageCurrent + "'");
 		return this.sMessageCurrent;		
 	}
 
