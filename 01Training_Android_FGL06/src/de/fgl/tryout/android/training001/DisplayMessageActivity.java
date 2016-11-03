@@ -1,30 +1,23 @@
 package de.fgl.tryout.android.training001;
 
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v4.app.Fragment;
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
-import android.os.Build;
 
 
 // .... extends Activity
-//Damit eine Men�leiste angezeigt wird. Aber ActionBarActivity ist deprecated
+//Damit eine Menüleiste angezeigt wird. Aber ActionBarActivity ist deprecated
 //public class DisplayMessageActivity extends ActionBarActivity {
-
-//AppCompatActivity wird wohl �ber die SupportBibiothek (V7) eingebunden.
+//Lösung:
+//AppCompatActivity wird wohl über die SupportBibiothek (V7) eingebunden.
 public class DisplayMessageActivity extends AppCompatActivity {
 	private String sMessageCurrent;
 	
@@ -72,21 +65,22 @@ public class DisplayMessageActivity extends AppCompatActivity {
 //			//Style den Hintergrund		
 //			actionBar.setBackgroundDrawable(new ColorDrawable(iColor)); // set your desired color
 		}else{
-Log.d("FGLTEST", "Methode sDisplayActivity.onCreate(..) - minSdkVersion is 11 or higher.");
+			Log.d("FGLTEST", "Methode sDisplayActivity.onCreate(..) - minSdkVersion is 11 or higher.");
 			
 			// If your minSdkVersion is 11 or higher, instead use:
 			android.app.ActionBar actionBar = getActionBar();
 			if(actionBar==null){
-				//TODO GOO 20160818: Warum ist Action Bar NULL?
+				//TODO 20160818: Warum ist Action Bar NULL?
 				Log.d("FGLTEST", "Methode sDisplayActivity.onCreate(..) - action bar IS NULL.");
 				
 			}else{
-			Log.d("FGLTEST", "Methode sDisplayActivity.onCreate(..) - action bar not null.");
+				Log.d("FGLTEST", "Methode sDisplayActivity.onCreate(..) - action bar not null.");
 			
-			actionBar.setDisplayHomeAsUpEnabled(true);
+				actionBar.setDisplayHomeAsUpEnabled(true);
 			
-			//Style den Hintergrund			
-			actionBar.setBackgroundDrawable(new ColorDrawable(iColor)); // set your desired color
+				//Style den Hintergrund
+				//TODO: 20161103 Funktioniert nicht
+				actionBar.setBackgroundDrawable(new ColorDrawable(iColor)); // set your desired color
 			}		
 		}
 			
@@ -119,6 +113,16 @@ Log.d("FGLTEST", "Methode sDisplayActivity.onCreate(..) - minSdkVersion is 11 or
 //		return true;
 //	}
 
+	//FGL für neue Buttons in der Action Bar notwendig
+		@Override
+		public boolean onCreateOptionsMenu(Menu menu) {
+		    // Inflate the menu items for use in the action bar
+		    MenuInflater inflater = getMenuInflater();
+		    inflater.inflate(R.menu.display_message, menu);
+		    return super.onCreateOptionsMenu(menu);
+		}
+		
+		//FGL für die Reaktion auf neue Buttons in der ActionBar notwendig
 	//FGL: Training/Adding the Action Bar / Adding Action Buttons
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -220,15 +224,6 @@ Log.d("FGLTEST", "Methode sDisplayActivity.onCreate(..) - minSdkVersion is 11 or
 //		}
 //	}
 
-	//FGL f�r neue Buttons in der Action Bar notwendig
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-	    // Inflate the menu items for use in the action bar
-	    MenuInflater inflater = getMenuInflater();
-	    inflater.inflate(R.menu.display_message, menu);
-	    return super.onCreateOptionsMenu(menu);
-	}
 	
-	//FGL f�r die Reaktion auf neue Buttons in der ActionBar notwendig
 	
 }

@@ -45,7 +45,8 @@
         </activity>
         
         <!-- Damit eine Menüleiste angezeigt wird muss die Activity in der Java Klasse die ActionBarActivity extenden.
-             Desweiteren muss für den zurück Button oben die ParentActivity hier im Layout angegeben werden. -->
+             Desweiteren muss für den zurück Button oben die ParentActivity hier im Layout angegeben werden.
+             Dieser Button muss noch in der .onCreate()-Methode mit .setDisplayHomeAsUpEnabled(true) aktiviert werden -->
         <activity
             android:name=".DisplayMessageActivity"
             android:label="@string/title_activity_display_message"
@@ -62,11 +63,21 @@
 
         <!--
              FGL 20160727: Weiterentwicklung im ...FGL04 Projekt.
-             Diese Activity wird mit .createActivityForResult() aufgerufen.
+             Diese Activity wird mit .createActivityForResult() aufgerufen.
         -->
+        <!-- FGL 20161103: Weiterentwicklung im FGL06 Projekt.
+             In der ActionBar-Leiste den zurück-Button einbauen. ...parentActivityName
+             Desweiteren muss dies im onCreate() noch aktivert weren über .setDisplayHomeAsUpEnabled(true);
+              -->
         <activity
             android:name=".DisplayMessageActivityForResult"
-            android:label="@string/title_activity_display_message_activity_for_result" >
+            android:label="@string/title_activity_display_message_activity_for_result" 
+            android:parentActivityName=".MainActivity" >
+
+            <!-- Parent activity meta-data to support 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="de.fgl.tryout.android.training001.MainActivity" />
         </activity>
         
         
@@ -77,7 +88,7 @@
         
         <!-- Ich will einen Zurueck - button in der menueleiste haben. 
              Darum versuch wie bei displayMessageActivity einen parent Namen anzugeben. 
-             DAS Klappt-->
+             DAS Klappt.  Desweiteren muss dies im onCreate() noch aktivert weren über .setDisplayHomeAsUpEnabled(true);-->
         <activity
             android:name=".DisplayWebviewActivityForSearch"
             android:label="@string/title_activity_display_search_web"
