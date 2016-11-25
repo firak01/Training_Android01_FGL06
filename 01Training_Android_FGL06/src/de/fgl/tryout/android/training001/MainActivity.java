@@ -14,7 +14,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ListView;
 
 /**
  * Aus developer.android.com Training/Building Your First App
@@ -73,6 +75,10 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 		if (savedInstanceState == null) {
 			getSupportFragmentManager().beginTransaction()
 					.add(R.id.container, new PlaceholderFragment()).commit();
+			
+					//FGL06: füge eine Liste der Suchbegriffe hinzu, und die Möglichkeit daraus auswählend (ggfs. kombiniert) zu suchen
+			getSupportFragmentManager().beginTransaction()
+			.add(R.id.container, new PlaceholderFragmentList()).commit();
 		 } else {
 			//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Gerät verbunden sein.
 			//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
@@ -454,6 +460,49 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 					false);
 			return rootView;
 		}
+	}
+	
+	/**
+	 * A placeholder fragment containing a simple view.
+	 */
+	public static class PlaceholderFragmentList extends Fragment {
+		private String[] TEST = new String[5];
+		public PlaceholderFragmentList() {
+		}
+
+		@Override
+		public View onCreateView(LayoutInflater inflater, ViewGroup container,
+				Bundle savedInstanceState) {
+			View rootView = inflater.inflate(R.layout.fragment_main_list, container,
+					false);
+			
+			//Hier, versuche die ListView zu füllen
+			ListView vwList;
+			vwList = (ListView) rootView.findViewById(R.id.list_search_web);
+			if(vwList==null){
+				Log.d("FGLSTATE", "PlaceholderFragemntList.onCreateView() vwList ist NULL.");
+				
+			}else{
+				Log.d("FGLSTATE", "PlaceholderFragemntList.onCreateView() vwList gefunden.");
+				
+			}
+			initialisiereListTestElemente();
+			
+			//TODO GOON: den richtigen Konstruktor holen ArrayAdapter myArrayAdapter = new ArrayAdapter<String>(vwList, android.R.layout.simple_list_item_1, TEST);
+			
+			return rootView;
+		}
+		
+		
+		private void initialisiereListTestElemente(){
+			TEST[0] = "eins";
+			TEST[1] = "zwei";
+			TEST[2] = "drei";
+			TEST[3] = "vier";
+			TEST[4] = "fünf";
+		}
+		
+		
 	}
 
 }

@@ -12,6 +12,9 @@
     <string name="title_activity_display_message_activity_for_result">DisplayMessageActivityForResult</string>
     <string name="button_send_for_result">Send for result</string>
     <string name="button_search_web">Search in web</string>
+    <!-- Feragement Main_list -->
+    <string name="button_search_web_from_list">Search in web from list</string>
+    <string name="label_search_web_from_list">Search list - filled from text above</string>
 
     <!-- About Box -->
     <string name="action_about">About</string>

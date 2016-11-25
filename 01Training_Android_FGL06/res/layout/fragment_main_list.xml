@@ -1,0 +1,54 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/LinearLayout1"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:onClick="sendMessage"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="de.fgl.tryout.android.training001.MainActivity$PlaceholderFragmentList" >
+
+    <TextView
+        android:id="@+id/textView1"
+         android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:text="@string/label_search_web_from_list" 
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <requestFocus />
+
+        <ScrollView
+            android:id="@+id/scrollView1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical" >
+                
+                <ListView
+                    android:id="@+id/list_search_web" 
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    />
+                    
+                    
+                
+            </LinearLayout>
+        </ScrollView>
+
+    <Button
+        android:id="@+id/button_search_web_from_list"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="23dp"
+        android:onClick="sendMessageToSearchWeb"
+        android:text="@string/button_search_web_from_list" />
+
+</LinearLayout>
