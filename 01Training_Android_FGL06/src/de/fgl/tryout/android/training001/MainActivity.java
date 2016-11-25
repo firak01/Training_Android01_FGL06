@@ -488,7 +488,12 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 			}
 			initialisiereListTestElemente();
 			
-			//TODO GOON: den richtigen Konstruktor holen ArrayAdapter myArrayAdapter = new ArrayAdapter<String>(vwList, android.R.layout.simple_list_item_1, TEST);
+			//So wird der ArrayAdapter eingebunden.
+			ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_1, TEST);
+			vwList.setAdapter(myArrayAdapter);
+			
+			//TODO GOON: Momentan wird nur eine Zeile angezeigt. Es sollten schon ein paar mehr Einträge sein.
+			
 			
 			return rootView;
 		}
