@@ -15,6 +15,7 @@
     <!-- Feragement Main_list -->
     <string name="button_search_web_from_list">Search in web from list</string>
     <string name="label_search_web_from_list">Search list - filled from text above</string>
+    <string name="element_search_web_from_list_empty">Keine Einträge</string>
 
     <!-- About Box -->
     <string name="action_about">About</string>

@@ -1,6 +1,8 @@
 package de.fgl.tryout.android.training001;
 
 
+import java.util.ArrayList;
+
 import basic.zBasic.util.datatype.string.StringZZZ;
 import biz.tekeye.abouttest.AboutBox;
 import android.content.Intent;
@@ -9,14 +11,17 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 /**
  * Aus developer.android.com Training/Building Your First App
@@ -262,9 +267,9 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 	@Override
 	public void onPause(){
 		super.onPause();
-		//FGL: Rufe beim �berschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
+		//FGL: Rufe beim Überschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
 		
-		//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Ger�t verbunden sein.
+		//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Gerät verbunden sein.
 		//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
 		//            und Eclipse neu starten muss.
 		Log.d("FGLSTATE", "onPause() wurde aktiviert");
@@ -292,9 +297,9 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 	 */
 	public void onResume(){
 		//super.onResume();
-		//FGL: Rufe beim �berschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
+		//FGL: Rufe beim Überschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
 		
-		//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Ger�t verbunden sein.
+		//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Gerät verbunden sein.
 		//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
 		//            und Eclipse neu starten muss.
 		Log.d("FGLSTATE", "onResume() wurde aktiviert");
@@ -305,7 +310,7 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
     	//String sMessageCurrent = (String) savedInstanceState.getSerializable(KEY_MESSAGE_CURRENT);
     	//this.setMessageCurrent(sMessageCurrent);
     	
-		//Damit das funktioniert muss onRestoreInstanceState() ausgef�hrt werden und es muss die lokale Property wieder gef�llt worden sein.
+		//Damit das funktioniert muss onRestoreInstanceState() ausgeführt werden und es muss die lokale Property wieder gefüllt worden sein.
 		String sMessageCurrent = this.getMessageCurrent();
 		Log.d("FGLSTATE", "onResume(): Wert per Variable sMessageCurrent = " + sMessageCurrent);
 		
@@ -345,15 +350,15 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 	
 	public void onStop(){
 		//super.onStop();
-		//FGL: Rufe beim �berschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
+		//FGL: Rufe beim Überschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
 		
-		//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Ger�t verbunden sein.
+		//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Gerät verbunden sein.
 				//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
 				//            und Eclipse neu starten muss.
 				Log.d("FGLSTATE", "onStop() wurde aktiviert");
 				
 				
-		//Versuche f�r onResume() den Stringwert zu retten, der dann in onResume() ausgelesen werden soll.
+		//Versuche für onResume() den Stringwert zu retten, der dann in onResume() ausgelesen werden soll.
 				//ABER TODO GOON 20160715: Das klappt nicht!!!
 		EditText editText = (EditText) findViewById(R.id.edit_message);
 		String message = editText.getText().toString();			
@@ -367,7 +372,7 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
         bundle.putString(MyMessageHandler.RESUME_MESSAGE_BUNDLE, message);
         getIntent().putExtras(bundle);
         
-        //Versuch 3: Mit neuem Intent UND der �berschriebenenen Methode onNewIntent()
+        //Versuch 3: Mit neuem Intent UND der überschriebenenen Methode onNewIntent()
         Log.d("FGLSTATE", "onStop() - Sicher Message in NEUEM intent weg: " + message);
         //Intent intent = new Intent(this, MainActivity.class);
         Intent intent = new Intent();
@@ -381,9 +386,9 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 	
 	public void onRestart(){
 		super.onRestart();
-		//FGL: Rufe beim �berschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
+		//FGL: Rufe beim Überschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
 		
-		//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Ger�t verbunden sein.
+		//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Gerät verbunden sein.
 				//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
 				//            und Eclipse neu starten muss.
 				Log.d("FGLSTATE", "onRestart() wurde aktiviert");
@@ -391,9 +396,9 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 	
 	public void onStart(){
 		super.onStart();
-		//FGL: Rufe beim �berschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
+		//FGL: Rufe beim Überschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
 		
-		//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Ger�t verbunden sein.
+		//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Gerät verbunden sein.
 				//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
 				//            und Eclipse neu starten muss.
 				Log.d("FGLSTATE", "onStart() wurde aktiviert");
@@ -403,9 +408,9 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 		
 		//NOTWENDIG ZUM PERSISTIERN DER DATEN IM BUNDLE
 				//super.onSaveInstanceState(outState);
-				//FGL: Rufe beim �berschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
+				//FGL: Rufe beim Überschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
 				
-				//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Ger�t verbunden sein.
+				//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Gerät verbunden sein.
 						//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
 						//            und Eclipse neu starten muss.
 						Log.d("FGLSTATE", "onSaveInstanceState() wurde aktiviert");
@@ -425,9 +430,9 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 		//Merke onResume() oder onStart() haben kein Bundle als Parameter
 		//Bei onResume() ... WIE KANN MAN DA DIE DATEN ZURUECKHOLEN?????
 		//super.onRestoreInstanceState(inState);
-		//FGL: Rufe beim �berschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
+		//FGL: Rufe beim Überschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
 		
-		//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Ger�t verbunden sein.
+		//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Gerät verbunden sein.
 				//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
 				//            und Eclipse neu starten muss.
 				Log.d("FGLSTATE", "onRestoreInstanceState() wurde aktiviert");
@@ -466,38 +471,121 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 	 * A placeholder fragment containing a simple view.
 	 */
 	public static class PlaceholderFragmentList extends Fragment {
-		private String[] TEST = new String[5];
+		private String[] TEST = new String[5];//hardcoded, um irgendeinen Inhalt darzustellen
+		private ArrayList<String> listaSearchString = new ArrayList<String>();
 		public PlaceholderFragmentList() {
 		}
 
 		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-				Bundle savedInstanceState) {
-			View rootView = inflater.inflate(R.layout.fragment_main_list, container,
-					false);
+		public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
+			View rootView = inflater.inflate(R.layout.fragment_main_list, container, false);
 			
 			//Hier, versuche die ListView zu füllen
 			ListView vwList;
 			vwList = (ListView) rootView.findViewById(R.id.list_search_web);
 			if(vwList==null){
-				Log.d("FGLSTATE", "PlaceholderFragemntList.onCreateView() vwList ist NULL.");
+				Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() vwList ist NULL.");
 				
 			}else{
-				Log.d("FGLSTATE", "PlaceholderFragemntList.onCreateView() vwList gefunden.");
+				Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() vwList gefunden.");
+
+				//Teste auf gefüllt
+				//initialisiereListTestElemente();
+				//So wird der ArrayAdapter eingebunden.
+				//ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_1, TEST);
+                //ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, TEST);//Haken werden hinter den Elementen angezeigt.
+				//vwList.setAdapter(myArrayAdapter);	
 				
+				if(this.listaSearchString.isEmpty()){
+					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() ArrayList für Elemente ist leer.");
+					//getListView().setEmptyView(noItems(getResources().getString(R.string.widget_empty)));
+					vwList.setEmptyView(noItems(rootView, getResources().getString(R.string.element_search_web_from_list_empty)));
+					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() Leerlisteneintrag erzeugt und gesetzt.");
+					//1. Versuch: Cast Fehler. man man nicht Object[] in String[] casten  ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, (String[])listaSearchString.toArray());//Haken werden hinter den Elementen angezeigt.
+					//2. Versuch: NullPointer Exception: Attempt to get length of null Array.
+					String[] saTemp = listaSearchString.toArray(new String[0]);
+					
+					/*
+					 * List<String> list = new ArrayList<String>();
+//add some stuff
+list.add("android");
+list.add("apple");
+String[] stringArray = list.toArray(new String[0]);
+
+The toArray() method without passing any argument returns Object[]. So you have to pass an array as an argument, which will be filled with the data from the list, and returned. You can pass an empty array as well, but you can also pass an array with the desired size.
+
+					 */
+					
+					
+					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() saTemp erzeugt.");
+					ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, saTemp);//Haken werden hinter den Elementen angezeigt.
+					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() Arrayadapter erzeugt.");
+					vwList.setAdapter(myArrayAdapter);	
+					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() Arrayadapter gesetzt.");
+				}else{
+					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() ArrayList mit Elementen ist gefüllt. Anzahl Elemente: " + listaSearchString.size());			
+					
+				//Nur mit vorhandem Array den ArrayAdapter eingebunden.
+				//ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, (String[])listaSearchString.toArray());//Haken werden hinter den Elementen angezeigt.
+					String[] saTemp = null;
+					ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, listaSearchString.toArray(saTemp));//Haken werden hinter den Elementen angezeigt.
+					vwList.setAdapter(myArrayAdapter);		
+				}
 			}
-			initialisiereListTestElemente();
-			
-			//So wird der ArrayAdapter eingebunden.
-			ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_1, TEST);
-			vwList.setAdapter(myArrayAdapter);
-			
-			//TODO GOON: Momentan wird nur eine Zeile angezeigt. Es sollten schon ein paar mehr Einträge sein.
-			
+		
 			
 			return rootView;
 		}
 		
+		@Override
+		public void onStart() {
+		    super.onStart();
+		    Log.d("FGLSTATE", "PlaceholderFragementList.onStart()");
+		    
+		    Log.d("FGLSTATE", "PlaceholderFragementList.onStart(): Versuch leere Liste zu füllen");
+		    ListView vwList = (ListView) ((AppCompatActivity) getContext()).findViewById(R.id.list_search_web);
+			vwList.setEmptyView(noItems(getResources().getString(R.string.element_search_web_from_list_empty)));			
+			Log.d("FGLSTATE", "PlaceholderFragementList.onStart(): Leere Liste gefüllt");
+		}
+		
+		
+		private TextView noItems(View rootView, String text) {
+		    TextView emptyView = new TextView(getActivity());
+		    //Make sure you import android.widget.LinearLayout.LayoutParams;
+		    emptyView.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+		    //Instead of passing resource id here I passed resolved color 
+		    //That is, getResources().getColor((R.color.gray_dark))
+		    emptyView.setTextColor(getResources().getColor(R.color.material_grey_100)); //.gray_dark));
+		    emptyView.setText(text);
+		    emptyView.setTextSize(12);
+		   // emptyView.setVisibility(View.GONE);
+		    //emptyView.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
+
+		    //Add the view to the list view. This might be what you are missing
+		   //((ViewGroup) getListView().getParent()).addView(emptyView);
+		   //((ViewGroup) getView().getParent()).addView(emptyView);
+		  //????  ((ViewGroup) rootView).addView(emptyView);
+		   
+		    return emptyView;
+		}
+		
+		private TextView noItems(String text) {
+		    TextView emptyView = new TextView(getActivity());
+		    //Make sure you import android.widget.LinearLayout.LayoutParams;
+		    emptyView.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+		    //Instead of passing resource id here I passed resolved color 
+		    //That is, getResources().getColor((R.color.gray_dark))
+		    emptyView.setTextColor(getResources().getColor(R.color.material_grey_100)); //.gray_dark));
+		    emptyView.setText(text);
+		    emptyView.setTextSize(12);
+		    //emptyView.setVisibility(View.GONE);
+		    //emptyView.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
+
+		    //Add the view to the list view. This might be what you are missing
+		  //???  ((ViewGroup) getView().getParent()).addView(emptyView);
+	   
+		    return emptyView;
+		}
 		
 		private void initialisiereListTestElemente(){
 			TEST[0] = "eins";

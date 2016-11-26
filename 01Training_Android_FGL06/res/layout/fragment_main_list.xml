@@ -19,28 +19,22 @@
         android:text="@string/label_search_web_from_list" 
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" >
+
+        <ListView
+            android:id="@+id/list_search_web"
+            android:layout_width="wrap_content"
+            android:layout_height="192dp"
+            android:choiceMode="multipleChoice"
+            android:scrollbars="vertical|horizontal" >
+
+        </ListView>
+    </LinearLayout>
+
         <requestFocus />
-
-        <ScrollView
-            android:id="@+id/scrollView1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical" >
-                
-                <ListView
-                    android:id="@+id/list_search_web" 
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    />
-                    
-                    
-                
-            </LinearLayout>
-        </ScrollView>
 
     <Button
         android:id="@+id/button_search_web_from_list"
