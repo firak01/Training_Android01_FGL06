@@ -499,8 +499,7 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 				if(this.listaSearchString.isEmpty()){
 					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() ArrayList für Elemente ist leer.");
 					//getListView().setEmptyView(noItems(getResources().getString(R.string.widget_empty)));
-					vwList.setEmptyView(noItems(rootView, getResources().getString(R.string.element_search_web_from_list_empty)));
-					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() Leerlisteneintrag erzeugt und gesetzt.");
+					
 					//1. Versuch: Cast Fehler. man man nicht Object[] in String[] casten  ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, (String[])listaSearchString.toArray());//Haken werden hinter den Elementen angezeigt.
 					//2. Versuch: NullPointer Exception: Attempt to get length of null Array.
 					String[] saTemp = listaSearchString.toArray(new String[0]);
@@ -515,13 +514,17 @@ String[] stringArray = list.toArray(new String[0]);
 The toArray() method without passing any argument returns Object[]. So you have to pass an array as an argument, which will be filled with the data from the list, and returned. You can pass an empty array as well, but you can also pass an array with the desired size.
 
 					 */
-					
-					
+									
 					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() saTemp erzeugt.");
 					ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, saTemp);//Haken werden hinter den Elementen angezeigt.
 					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() Arrayadapter erzeugt.");
 					vwList.setAdapter(myArrayAdapter);	
 					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() Arrayadapter gesetzt.");
+					
+					//Remember to place the emptyView after binding the adapter to listview.Mine was not working for first time and after I moved the setEmptyView after the setAdapter it is now working.
+					vwList.setEmptyView(noItems(rootView, getResources().getString(R.string.element_search_web_from_list_empty)));
+					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() Leerlisteneintrag erzeugt und gesetzt.");
+					
 				}else{
 					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() ArrayList mit Elementen ist gefüllt. Anzahl Elemente: " + listaSearchString.size());			
 					
@@ -542,10 +545,10 @@ The toArray() method without passing any argument returns Object[]. So you have 
 		    super.onStart();
 		    Log.d("FGLSTATE", "PlaceholderFragementList.onStart()");
 		    
-		    Log.d("FGLSTATE", "PlaceholderFragementList.onStart(): Versuch leere Liste zu füllen");
-		    ListView vwList = (ListView) ((AppCompatActivity) getContext()).findViewById(R.id.list_search_web);
-			vwList.setEmptyView(noItems(getResources().getString(R.string.element_search_web_from_list_empty)));			
-			Log.d("FGLSTATE", "PlaceholderFragementList.onStart(): Leere Liste gefüllt");
+//		    Log.d("FGLSTATE", "PlaceholderFragementList.onStart(): Versuch leere Liste zu füllen");
+//		    ListView vwList = (ListView) ((AppCompatActivity) getContext()).findViewById(R.id.list_search_web);
+//			vwList.setEmptyView(noItems(getResources().getString(R.string.element_search_web_from_list_empty)));			
+//			Log.d("FGLSTATE", "PlaceholderFragementList.onStart(): Leere Liste gefüllt");
 		}
 		
 		
@@ -558,8 +561,8 @@ The toArray() method without passing any argument returns Object[]. So you have 
 		    emptyView.setTextColor(getResources().getColor(R.color.material_grey_100)); //.gray_dark));
 		    emptyView.setText(text);
 		    emptyView.setTextSize(12);
-		   // emptyView.setVisibility(View.GONE);
-		    //emptyView.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
+		    emptyView.setVisibility(View.GONE);
+		    emptyView.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
 
 		    //Add the view to the list view. This might be what you are missing
 		   //((ViewGroup) getListView().getParent()).addView(emptyView);
