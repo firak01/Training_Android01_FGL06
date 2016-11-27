@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import biz.tekeye.abouttest.AboutBox;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
@@ -471,8 +472,7 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 	 * A placeholder fragment containing a simple view.
 	 */
 	public static class PlaceholderFragmentList extends Fragment {
-		private String[] TEST = new String[5];//hardcoded, um irgendeinen Inhalt darzustellen
-		private ArrayList<String> listaSearchString = new ArrayList<String>();
+		private ArrayList<String> listaSearchString = new ArrayList<String>();//Für die Liste der Suchwerte, sie wird gefüllt. Wenn sie leer ist, wird ein spezieller "Leereintrag" angezeigt.
 		public PlaceholderFragmentList() {
 		}
 
@@ -489,54 +489,27 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 			}else{
 				Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() vwList gefunden.");
 
-				//Teste auf gefüllt
+				//Teste auf gefüllte Liste
 				//initialisiereListTestElemente();
-				//So wird der ArrayAdapter eingebunden.
-				//ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_1, TEST);
-                //ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, TEST);//Haken werden hinter den Elementen angezeigt.
-				//vwList.setAdapter(myArrayAdapter);	
-				
+							
 				if(this.listaSearchString.isEmpty()){
 					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() ArrayList für Elemente ist leer.");
-					//getListView().setEmptyView(noItems(getResources().getString(R.string.widget_empty)));
-					
+					//Merke: Im onStart wird ein Element erstellt, dass angezeigt werden soll, wenn die Liste leer ist.
+				}else{
+					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() ArrayList mit Elementen ist gefüllt. Anzahl Elemente: " + listaSearchString.size());
+				}
+										
 					//1. Versuch: Cast Fehler. man man nicht Object[] in String[] casten  ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, (String[])listaSearchString.toArray());//Haken werden hinter den Elementen angezeigt.
 					//2. Versuch: NullPointer Exception: Attempt to get length of null Array.
-					String[] saTemp = listaSearchString.toArray(new String[0]);
-					
-					/*
-					 * List<String> list = new ArrayList<String>();
-//add some stuff
-list.add("android");
-list.add("apple");
-String[] stringArray = list.toArray(new String[0]);
-
-The toArray() method without passing any argument returns Object[]. So you have to pass an array as an argument, which will be filled with the data from the list, and returned. You can pass an empty array as well, but you can also pass an array with the desired size.
-
-					 */
-									
+					//The toArray() method without passing any argument returns Object[]. So you have to pass an array as an argument, which will be filled with the data from the list, and returned. You can pass an empty array as well, but you can also pass an array with the desired size.
+					String[] saTemp = listaSearchString.toArray(new String[listaSearchString.size()]);
+																
 					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() saTemp erzeugt.");
 					ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, saTemp);//Haken werden hinter den Elementen angezeigt.
 					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() Arrayadapter erzeugt.");
 					vwList.setAdapter(myArrayAdapter);	
-					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() Arrayadapter gesetzt.");
-					
-					//Remember to place the emptyView after binding the adapter to listview.Mine was not working for first time and after I moved the setEmptyView after the setAdapter it is now working.
-					vwList.setEmptyView(noItems(rootView, getResources().getString(R.string.element_search_web_from_list_empty)));
-					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() Leerlisteneintrag erzeugt und gesetzt.");
-					
-				}else{
-					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() ArrayList mit Elementen ist gefüllt. Anzahl Elemente: " + listaSearchString.size());			
-					
-				//Nur mit vorhandem Array den ArrayAdapter eingebunden.
-				//ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, (String[])listaSearchString.toArray());//Haken werden hinter den Elementen angezeigt.
-					String[] saTemp = null;
-					ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, listaSearchString.toArray(saTemp));//Haken werden hinter den Elementen angezeigt.
-					vwList.setAdapter(myArrayAdapter);		
-				}
+					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() Arrayadapter gesetzt.");									
 			}
-		
-			
 			return rootView;
 		}
 		
@@ -544,58 +517,58 @@ The toArray() method without passing any argument returns Object[]. So you have 
 		public void onStart() {
 		    super.onStart();
 		    Log.d("FGLSTATE", "PlaceholderFragementList.onStart()");
+		    ListView vwList = (ListView) ((AppCompatActivity) getContext()).findViewById(R.id.list_search_web);
 		    
-//		    Log.d("FGLSTATE", "PlaceholderFragementList.onStart(): Versuch leere Liste zu füllen");
-//		    ListView vwList = (ListView) ((AppCompatActivity) getContext()).findViewById(R.id.list_search_web);
-//			vwList.setEmptyView(noItems(getResources().getString(R.string.element_search_web_from_list_empty)));			
-//			Log.d("FGLSTATE", "PlaceholderFragementList.onStart(): Leere Liste gefüllt");
+			//Remember to place the emptyView after binding the adapter to listview.Mine was not working for first time and after I moved the setEmptyView after the setAdapter it is now working.
+			TextView txtNoItems = noItems(vwList, getResources().getString(R.string.element_search_web_from_list_empty));
+			Log.d("FGLSTATE", "PlaceholderFragementList.onStart() Leerlisteneintrag txtNoItems erzeugt.");
+			
+			vwList.setEmptyView(txtNoItems);
+			Log.d("FGLSTATE", "PlaceholderFragementList.onStart() Leerlisteneintrag txtNoItems gesetzt.");
 		}
 		
 		
-		private TextView noItems(View rootView, String text) {
+		private TextView noItems(ListView listView, String text) {
+			//Merke1: 
+			//ListView als Argument aufgenommen. Abgewandelt von einem Beispiel für ListFragments.
+			//Siehe: http://stackoverflow.com/questions/14082303/how-to-use-setemptyview-with-custom-list-layout-in-listfragment/15990955#15990955
+			
+			//Merke 2:
+			//Beispiel für ListActivity in Buch Android 4.4 Seite 130. Hier kann man das durch Konfiguration im Layout - XML erreichen:  geokontakte_auflisten.xml.... id/android:empty...
+			
+			//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 		    TextView emptyView = new TextView(getActivity());
 		    //Make sure you import android.widget.LinearLayout.LayoutParams;
 		    emptyView.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 		    //Instead of passing resource id here I passed resolved color 
 		    //That is, getResources().getColor((R.color.gray_dark))
-		    emptyView.setTextColor(getResources().getColor(R.color.material_grey_100)); //.gray_dark));
+		   // emptyView.setTextColor(getResources().getColor(R.color.material_grey_100)); //.gray_dark)); //es wird nix angezeigt.
+		    
+		    //FGL: Ich übergeb hier einfach die ID.
+		    emptyView.setTextColor(Color.GRAY);
 		    emptyView.setText(text);
-		    emptyView.setTextSize(12);
-		    emptyView.setVisibility(View.GONE);
+		    emptyView.setTextSize(18);
+		    //emptyView.setVisibility(View.GONE); //FGL: Das darf nicht gesetzt sein..., sonst erscheint der Eintrag nicht.
 		    emptyView.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
-
-		    //Add the view to the list view. This might be what you are missing
-		   //((ViewGroup) getListView().getParent()).addView(emptyView);
-		   //((ViewGroup) getView().getParent()).addView(emptyView);
-		  //????  ((ViewGroup) rootView).addView(emptyView);
-		   
+		    Log.d("FGLSTATE", "PlaceholderFragementList.noItems() ... TextView erzeugt");
+		    
+		    //Beispiel aus dem Web: Geht wohl nur für ListFragments ((ViewGroup) getListView().getParent()).addView(emptyView, 0);
+		    //Add the view to the list view. This might be what you are missing		    
+		    //((ViewGroup) getView().getParent()).addView(emptyView, 0);
+		  		    		    		    
+		    //Funktioniert, auch mit meiner ListView!!!
+		    //Fehler: ((ViewGroup)listView).addView(emptyView, 0);//not supported in AdapterView
+		    ((ViewGroup)listView.getParent()).addView(emptyView, 0);
 		    return emptyView;
 		}
 		
-		private TextView noItems(String text) {
-		    TextView emptyView = new TextView(getActivity());
-		    //Make sure you import android.widget.LinearLayout.LayoutParams;
-		    emptyView.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-		    //Instead of passing resource id here I passed resolved color 
-		    //That is, getResources().getColor((R.color.gray_dark))
-		    emptyView.setTextColor(getResources().getColor(R.color.material_grey_100)); //.gray_dark));
-		    emptyView.setText(text);
-		    emptyView.setTextSize(12);
-		    //emptyView.setVisibility(View.GONE);
-		    //emptyView.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
-
-		    //Add the view to the list view. This might be what you are missing
-		  //???  ((ViewGroup) getView().getParent()).addView(emptyView);
-	   
-		    return emptyView;
-		}
 		
 		private void initialisiereListTestElemente(){
-			TEST[0] = "eins";
-			TEST[1] = "zwei";
-			TEST[2] = "drei";
-			TEST[3] = "vier";
-			TEST[4] = "fünf";
+			String[] saTest = {"eins","zwei","drei","vier","fünf"};
+			for(int icount=0; icount <= saTest.length-1; icount++){
+				this.listaSearchString.add(saTest[icount]);
+			}
+			
 		}
 		
 		
