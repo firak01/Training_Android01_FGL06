@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="top"
+    android:onClick="addElementToSearchList"
     android:orientation="horizontal"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
@@ -53,5 +54,20 @@
         android:layout_below="@+id/button_send"
         android:onClick="sendMessageForResult"
         android:text="@string/button_send_for_result" />
+
+    <Button
+        android:id="@+id/add_search_list"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/button1"
+        android:layout_alignBottom="@+id/button1"
+        android:layout_alignLeft="@+id/button_search_web"
+        android:layout_alignRight="@+id/button_search_web"
+        android:layout_below="@+id/button_search_web"
+        android:contentDescription="@string/button_add_element_to_list"
+        android:onClick="addElementToSearchList"
+        android:text="@string/button_add_element_to_list"
+        android:textSize="10dp" />
 
 </RelativeLayout>

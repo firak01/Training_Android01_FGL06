@@ -19,7 +19,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.Adapter;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -80,11 +82,11 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 
 		if (savedInstanceState == null) {
 			getSupportFragmentManager().beginTransaction()
-					.add(R.id.container, new PlaceholderFragment()).commit();
+				.add(R.id.container, new PlaceholderFragment(),"FRAGMENT_MAIN").commit();
 			
 					//FGL06: füge eine Liste der Suchbegriffe hinzu, und die Möglichkeit daraus auswählend (ggfs. kombiniert) zu suchen
 			getSupportFragmentManager().beginTransaction()
-			.add(R.id.container, new PlaceholderFragmentList()).commit();
+				.add(R.id.container, new PlaceholderFragmentList(),"FRAGMENT_MAIN_LIST").commit();
 		 } else {
 			//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Gerät verbunden sein.
 			//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
@@ -160,6 +162,28 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 		
 		return super.onOptionsItemSelected(item);
 	}
+	
+	public void addElementToSearchList(View view){
+		Log.d("FGLSTATE", "MainActivity.addElementToSearchList()");
+		   
+		EditText editText = (EditText) findViewById(R.id.edit_message);
+		String message = editText.getText().toString();		
+		Log.d("FGLSTATE", "MainActivity.addElementToSearchList(): message = " + message);
+		
+		if(!StringZZZ.isEmpty(message)){
+			PlaceholderFragmentList frgList = (PlaceholderFragmentList)getSupportFragmentManager().findFragmentByTag("FRAGMENT_MAIN_LIST");
+            frgList.addElement(message);			
+//			ArrayList<String>listaTemp = frgList.getSearchElements();
+//			listaTemp.add(message);
+			Log.d("FGLSTATE", "MainActivity.addElementToSearchList(): message hinzugefügt");
+			
+			//nun den Adapter über die Änderung informieren, um überhaupt die Chance zu haben, dass ein Text erscheint.
+//			ListView vwList = (ListView) findViewById(R.id.list_search_web);
+//			ArrayAdapter<String> adapter = (ArrayAdapter<String>)vwList.getAdapter();
+//			adapter.notifyDataSetChanged();			
+		}
+	}
+	
 	
 	/** Called when the user clicks the Send button */
 	public void sendMessage(View view) {
@@ -261,7 +285,7 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 	/* (non-Javadoc)
 	 * @see android.support.v4.app.FragmentActivity#onPause()
 	 * 
-	 * SHIFT+ALT+J ist die Tastenkombination f�r automatische Kommentare.
+	 * SHIFT+ALT+J ist die Tastenkombination für automatische Kommentare.
 	 * Nun muss das entsprechene Template angepasst werden.
 	 *  
 	 */
@@ -473,7 +497,56 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 	 */
 	public static class PlaceholderFragmentList extends Fragment {
 		private ArrayList<String> listaSearchString = new ArrayList<String>();//Für die Liste der Suchwerte, sie wird gefüllt. Wenn sie leer ist, wird ein spezieller "Leereintrag" angezeigt.
+		private ArrayList<String>getSearchElements(){
+			return listaSearchString;
+		}
+		
+		private ArrayAdapter arrayAdapter;
+		private void setArrayAdapter(ArrayAdapter adapter){
+			this.arrayAdapter=adapter;
+		}
+		private ArrayAdapter<String> getArrayAdapter(){
+			return this.arrayAdapter;
+		}
+				
 		public PlaceholderFragmentList() {
+		}
+		
+		public void addElement(String sToAdd){
+			ArrayList<String>listatemp = this.getSearchElements();
+			listatemp.add(sToAdd);
+			
+			//1. Versuch: Cast Fehler. man man nicht Object[] in String[] casten  ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, (String[])listaSearchString.toArray());//Haken werden hinter den Elementen angezeigt.
+			//2. Versuch: NullPointer Exception: Attempt to get length of null Array.
+			//The toArray() method without passing any argument returns Object[]. So you have to pass an array as an argument, which will be filled with the data from the list, and returned. You can pass an empty array as well, but you can also pass an array with the desired size.
+			String[] saTemp = listaSearchString.toArray(new String[listaSearchString.size()]);
+														
+			Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() saTemp erzeugt.");
+			ListView vwList = (ListView) ((AppCompatActivity) getContext()).findViewById(R.id.list_search_web);
+			ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, saTemp);//Haken werden hinter den Elementen angezeigt.
+			this.setArrayAdapter(myArrayAdapter);//das funktioniert... ist aber eine nicht so tolle Breite der Einträge.
+			
+			//ArrayAdapter<String> myArrayAdapter = this.getArrayAdapter();
+			//myArrayAdapter.clear();
+			//myArrayAdapter.addAll(saTemp);
+			//myArrayAdapter.add(sToAdd);
+			Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() Arrayadapter neu gefüllt.");
+			vwList.setAdapter(myArrayAdapter);	
+			vwList.invalidateViews();
+	        vwList.refreshDrawableState();
+			
+			//das Adapter Benachrichtigen reicht nictht
+//			this.getArrayAdapter().notifyDataSetChanged();			
+//			ListView vwList = (ListView) ((AppCompatActivity) getContext()).findViewById(R.id.list_search_web);
+//			if(vwList==null){
+//				Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() vwList ist NULL.");
+//				
+//			}else{
+//				Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() vwList gefunden.");
+//
+//				vwList.invalidateViews();
+//		        vwList.refreshDrawableState();
+//			}
 		}
 
 		@Override
@@ -506,6 +579,7 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 																
 					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() saTemp erzeugt.");
 					ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, saTemp);//Haken werden hinter den Elementen angezeigt.
+					this.setArrayAdapter(myArrayAdapter);
 					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() Arrayadapter erzeugt.");
 					vwList.setAdapter(myArrayAdapter);	
 					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() Arrayadapter gesetzt.");									
@@ -561,8 +635,7 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 		    ((ViewGroup)listView.getParent()).addView(emptyView, 0);
 		    return emptyView;
 		}
-		
-		
+				
 		private void initialisiereListTestElemente(){
 			String[] saTest = {"eins","zwei","drei","vier","fünf"};
 			for(int icount=0; icount <= saTest.length-1; icount++){
