@@ -171,16 +171,14 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 		Log.d("FGLSTATE", "MainActivity.addElementToSearchList(): message = " + message);
 		
 		if(!StringZZZ.isEmpty(message)){
+			
+			//Besser als das Standard String.replace und Pattern zu verwenden ist hier die JAZKernel-Hilfsklasse
+			message = MyMessageHandler.createNormedMessage(message);							
+			Log.d("FGLSTATE", "sendessageForResult(): message nach der Normierung = " + message);
+								
 			PlaceholderFragmentList frgList = (PlaceholderFragmentList)getSupportFragmentManager().findFragmentByTag("FRAGMENT_MAIN_LIST");
             frgList.addElement(message);			
-//			ArrayList<String>listaTemp = frgList.getSearchElements();
-//			listaTemp.add(message);
-			Log.d("FGLSTATE", "MainActivity.addElementToSearchList(): message hinzugefügt");
-			
-			//nun den Adapter über die Änderung informieren, um überhaupt die Chance zu haben, dass ein Text erscheint.
-//			ListView vwList = (ListView) findViewById(R.id.list_search_web);
-//			ArrayAdapter<String> adapter = (ArrayAdapter<String>)vwList.getAdapter();
-//			adapter.notifyDataSetChanged();			
+			Log.d("FGLSTATE", "MainActivity.addElementToSearchList(): message hinzugefügt");			
 		}
 	}
 	
@@ -193,10 +191,7 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 		String message = editText.getText().toString();
 		
 		//Besser als das Standard String.replace und Pattern zu verwenden ist hier die JAZKernel-Hilfsklasse
-		message = StringZZZ.replace(message, MyMessageHandler.MESSAGE_ADDITION_VARIABLE, "");
-		message = StringZZZ.replace(message, MyMessageHandler.MESSAGE_ADDITION_INTENT, "");
-		message = StringZZZ.replace(message, MyMessageHandler.MESSAGE_ADDITION_BUNDLE, "");	
-		message = StringZZZ.replace(message, MyMessageHandler.MESSAGE_ADDITION_RESULT,"");
+		message = MyMessageHandler.createNormedMessage(message);		
 		Log.d("FGLSTATE", "sendessage(): message nach der Normierung = " + message);
 		
 		//Speichere die message in eine lokale Variable. Grund: So kann man sie dann wegsichern wenn sich der State des Ger�ts �ndert.
@@ -214,9 +209,8 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 		EditText editText = (EditText) findViewById(R.id.edit_message);
 		String message = editText.getText().toString();
 		
-		message = MyMessageHandler.createNormedMessage(message);
-		
 		//Besser als das Standard String.replace und Pattern zu verwenden ist hier die JAZKernel-Hilfsklasse		
+		message = MyMessageHandler.createNormedMessage(message);				
 		Log.d("FGLSTATE", "sendessageForResult(): message nach der Normierung = " + message);
 		
 		//Speichere die message in eine lokale Variable. Grund: So kann man sie dann wegsichern wenn sich der State des Ger�ts �ndert.
@@ -256,9 +250,8 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 				EditText editText = (EditText) findViewById(R.id.edit_message);
 				String message = editText.getText().toString();
 				
-				message = MyMessageHandler.createNormedMessage(message);
-				
 				//Besser als das Standard String.replace und Pattern zu verwenden ist hier die JAZKernel-Hilfsklasse		
+				message = MyMessageHandler.createNormedMessage(message);								
 				Log.d("FGLSTATE", "searchWeb(): message nach der Normierung = " + message);
 				
 				//Speichere die message in eine lokale Variable. Grund: So kann man sie dann wegsichern wenn sich der State des Ger�ts �ndert.
@@ -519,23 +512,10 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 			//1. Versuch: Cast Fehler. man man nicht Object[] in String[] casten  ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, (String[])listaSearchString.toArray());//Haken werden hinter den Elementen angezeigt.
 			//2. Versuch: NullPointer Exception: Attempt to get length of null Array.
 			//The toArray() method without passing any argument returns Object[]. So you have to pass an array as an argument, which will be filled with the data from the list, and returned. You can pass an empty array as well, but you can also pass an array with the desired size.
-			String[] saTemp = listaSearchString.toArray(new String[listaSearchString.size()]);
-														
+			String[] saTemp = listaSearchString.toArray(new String[listaSearchString.size()]);														
 			Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() saTemp erzeugt.");
-			ListView vwList = (ListView) ((AppCompatActivity) getContext()).findViewById(R.id.list_search_web);
-			ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, saTemp);//Haken werden hinter den Elementen angezeigt.
-			this.setArrayAdapter(myArrayAdapter);//das funktioniert... ist aber eine nicht so tolle Breite der Einträge.
 			
-			//ArrayAdapter<String> myArrayAdapter = this.getArrayAdapter();
-			//myArrayAdapter.clear();
-			//myArrayAdapter.addAll(saTemp);
-			//myArrayAdapter.add(sToAdd);
-			Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() Arrayadapter neu gefüllt.");
-			vwList.setAdapter(myArrayAdapter);	
-			vwList.invalidateViews();
-	        vwList.refreshDrawableState();
-			
-			//das Adapter Benachrichtigen reicht nictht
+			//das Adapter Benachrichtigen reicht nicht
 //			this.getArrayAdapter().notifyDataSetChanged();			
 //			ListView vwList = (ListView) ((AppCompatActivity) getContext()).findViewById(R.id.list_search_web);
 //			if(vwList==null){
@@ -547,6 +527,15 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 //				vwList.invalidateViews();
 //		        vwList.refreshDrawableState();
 //			}
+			
+			ListView vwList = (ListView) ((AppCompatActivity) getContext()).findViewById(R.id.list_search_web);
+			ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, saTemp);//Haken werden hinter den Elementen angezeigt.
+			this.setArrayAdapter(myArrayAdapter);//20161128: das funktioniert... ist aber eine nicht so toll, immer korrekt angepasste Breite der Einträge.
+
+			Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() Arrayadapter neu gefüllt.");
+			vwList.setAdapter(myArrayAdapter);	
+			//vwList.invalidateViews();//20161128: Dies nicht machen, sonst wird jedesmal diese View 'zusätzlich' geladen (zumindest in meinen Tests)
+	        vwList.refreshDrawableState();				
 		}
 
 		@Override

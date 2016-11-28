@@ -17,7 +17,7 @@ public class MyMessageHandler {
 	
 	public final static String KEY_MESSAGE_CURRENT="currentMessage";
 	
-	//Folgende Texte werden beim Zur¸ckkehren aus der "DisplayMessageActivity" an den Sende String geh‰ngt. Je nachdem welcher Weg gew‰hlt wurde.
+	//Folgende Texte werden beim Zur√ºckkehren aus der "DisplayMessageActivity" an den Sende String geh√§ngt. Je nachdem welcher Weg gew√§hlt wurde.
 	public final static String MESSAGE_ADDITION_VARIABLE=" (wiederhergestellt per Variable)";
 	public final static String MESSAGE_ADDITION_BUNDLE=" (wiederhergestellt per Intent und Bundle)";
 	public final static String MESSAGE_ADDITION_INTENT=" (wiederhergestellt per Intent)";
