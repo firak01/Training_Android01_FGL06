@@ -22,6 +22,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.Adapter;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -33,10 +34,15 @@ import android.widget.TextView;
  *
  */
 public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //Merke: ActionBarActivity is deprecated
-	private String sMessageCurrent=null;
+	private String sMessageCurrent=null;	
 	private MyVersionBox versionBox = null;
 	private MyVersionHtmlBox versionHtmlBox = null;
 	private MyAboutBox aboutBox = null;
+	
+	//Fragments wegsichern, damit man sie wiederherstellen kann
+	private PlaceholderFragmentList  fragmentList;
+	private PlaceholderFragmentMain fragmentMain;
+	
 	public MyVersionBox getVersionBox() {
 		if(this.versionBox==null){
 			MyVersionBox a = new MyVersionBox();
@@ -81,12 +87,16 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 		setContentView(R.layout.activity_main);
 
 		if (savedInstanceState == null) {
+			this.fragmentMain =  new PlaceholderFragmentMain();
+			this.fragmentMain.setRetainInstance(true);
 			getSupportFragmentManager().beginTransaction()
-				.add(R.id.container, new PlaceholderFragment(),"FRAGMENT_MAIN").commit();
+				.add(R.id.container, this.fragmentMain,"FRAGMENT_MAIN").commit();
 			
-					//FGL06: füge eine Liste der Suchbegriffe hinzu, und die Möglichkeit daraus auswählend (ggfs. kombiniert) zu suchen
+			//FGL06: füge eine Liste der Suchbegriffe hinzu, und die Möglichkeit daraus auswählend (ggfs. kombiniert) zu suchen
+			this.fragmentList = new PlaceholderFragmentList();
+			this.fragmentList.setRetainInstance(true);
 			getSupportFragmentManager().beginTransaction()
-				.add(R.id.container, new PlaceholderFragmentList(),"FRAGMENT_MAIN_LIST").commit();
+				.add(R.id.container, this.fragmentList,"FRAGMENT_MAIN_LIST").commit();
 		 } else {
 			//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Gerät verbunden sein.
 			//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
@@ -107,8 +117,11 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 	        	}else{
 	        		editText.setText(sMessageCurrent + " (wiederhergestellt)");
 	        	}
-        	}        	
-        }
+        	}   
+        	
+	         this.fragmentList = (PlaceholderFragmentList) getSupportFragmentManager().getFragment(savedInstanceState,"fragmentList");
+	         this.fragmentMain = (PlaceholderFragmentMain) getSupportFragmentManager().getFragment(savedInstanceState,"fragmentMain");
+        }//end 	if (savedInstanceState == null) {
 	}//END MainActivity.onCreate(...)
 	
 	
@@ -167,19 +180,23 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 		Log.d("FGLSTATE", "MainActivity.addElementToSearchList()");
 		   
 		EditText editText = (EditText) findViewById(R.id.edit_message);
-		String message = editText.getText().toString();		
-		Log.d("FGLSTATE", "MainActivity.addElementToSearchList(): message = " + message);
-		
-		if(!StringZZZ.isEmpty(message)){
+		if(editText!=null){
+			String message = editText.getText().toString();		
+			Log.d("FGLSTATE", "MainActivity.addElementToSearchList(): message = " + message);
 			
 			//Besser als das Standard String.replace und Pattern zu verwenden ist hier die JAZKernel-Hilfsklasse
 			message = MyMessageHandler.createNormedMessage(message);							
 			Log.d("FGLSTATE", "sendessageForResult(): message nach der Normierung = " + message);
-								
-			PlaceholderFragmentList frgList = (PlaceholderFragmentList)getSupportFragmentManager().findFragmentByTag("FRAGMENT_MAIN_LIST");
-            frgList.addElement(message);			
-			Log.d("FGLSTATE", "MainActivity.addElementToSearchList(): message hinzugefügt");			
-		}
+			
+			if(!StringZZZ.isEmpty(message)){													
+				PlaceholderFragmentList frgList = (PlaceholderFragmentList)getSupportFragmentManager().findFragmentByTag("FRAGMENT_MAIN_LIST");
+	            frgList.addElement(message);		//hier passiert richtig viel...	
+				Log.d("FGLSTATE", "MainActivity.addElementToSearchList(): message hinzugefügt");		
+				
+				//Lösche nun den übergebenen Text aus dem Eingabefeld
+				editText.setText("");
+			}
+		}//end if editText!=null
 	}
 	
 	
@@ -213,9 +230,20 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 		message = MyMessageHandler.createNormedMessage(message);				
 		Log.d("FGLSTATE", "sendessageForResult(): message nach der Normierung = " + message);
 		
-		//Speichere die message in eine lokale Variable. Grund: So kann man sie dann wegsichern wenn sich der State des Ger�ts �ndert.
+		//Speichere die message in eine lokale Variable. Grund: So kann man sie dann wegsichern wenn sich der State des Geräts ändert.
 		this.setMessageCurrent(message);
-				
+		
+		//-----------------------------
+		//TODO GOON 20161129: Mache eine Hilfsklasse, für das Wegsichern und auch wieder Zurückholen von den Intent-Informationen zwischen den Activities.
+		MyMessageStoreFGL objStore = new MyMessageStoreFGL();
+			
+			//Fülle den Store mit dem Eintrag
+		objStore.put(MyMessageHandler.EXTRA_MESSAGE, message); //IDEE: das sollte der Wert der UI-Komponente sein, also R.id.edit_message
+		
+			//Übergib den Store als ganzes an den Intent
+		intent.putExtra(MyMessageHandler.EXTRA_STORE, objStore);//objStore muss serializable sein
+		//------------------------------
+		
 		intent.putExtra(MyMessageHandler.EXTRA_MESSAGE, message);
 		startActivityForResult(intent,1);
 	}
@@ -292,6 +320,10 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 		//            und Eclipse neu starten muss.
 		Log.d("FGLSTATE", "onPause() wurde aktiviert");
 		
+	    if (getSupportFragmentManager().findFragmentByTag("FRAGMENT_MAIN") != null)
+		        getSupportFragmentManager().findFragmentByTag("FRAGMENT_MAIN").setRetainInstance(true);
+	    if (getSupportFragmentManager().findFragmentByTag("FRAGMENT_MAIN_LIST") != null)
+	        getSupportFragmentManager().findFragmentByTag("FRAGMENT_MAIN_LIST").setRetainInstance(true);
 	}
 	
 	
@@ -321,6 +353,15 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 		//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
 		//            und Eclipse neu starten muss.
 		Log.d("FGLSTATE", "onResume() wurde aktiviert");
+		
+		//Versuche die fragments wiederherzustellen
+		//    if (getSupportFragmentManager().findFragmentByTag("FRAGMENT_MAIN") != null)
+		//        getSupportFragmentManager().findFragmentByTag("FRAGMENT_MAIN").getRetainInstance();//was man für einen quatsch aus dem Web übernimmt
+		    
+		 //   if (getSupportFragmentManager().findFragmentByTag("FRAGMENT_MAIN_LIST") != null)
+		 //       getSupportFragmentManager().findFragmentByTag("FRAGMENT_MAIN_LIST").getRetainInstance();
+	
+		
 				
 		//Versuche einen gespeicherten Text wiederherszustellen.
 		//Merke: Beim einfachen Wechseln zurück wird dann nicht onCreate() aufgerufen, sondern onResume(), 
@@ -358,6 +399,43 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 						EditText editText = (EditText) findViewById(R.id.edit_message);
 						editText.setText(sMessageCurrent + MyMessageHandler.MESSAGE_ADDITION_BUNDLE);
 					}
+					
+					
+					//3b) Versuche hier auch die ArrayListe aus dem Bundle zu bekommen, für PlaceHolderFragmentList
+					//GRUND: SERIALIZIERUNG geht nur mit expliziter Klasse, ggf. reicht auch hier ein "dreckiger" Typecast		
+					ArrayList listaTemp = (ArrayList) bundle.get(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT);
+					//MERKE: Wenn hier ein Fehler produziert wird, ist die Liste im Fragment vorhanden... Warum?
+					if(listaTemp==null){
+						Log.d("FGLSTATE", "onResume() mit Bundle. Es gibt kein Bundle für ArrayList SuchListen-Elemente.");
+					}else{
+						Log.d("FGLSTATE", "onResume() mit Bundle. Es gibt '" + listaTemp.size() + "' ArrayList SuchListen-Elementen.");
+					
+					//TODO GOON
+						
+					}
+					
+					//3c) Fragments finden
+					//Save the fragment's instance
+				    PlaceholderFragmentMain f1 = (PlaceholderFragmentMain)getSupportFragmentManager().getFragment(bundle, "fragmentMain");
+				    PlaceholderFragmentList f2 = (PlaceholderFragmentList)getSupportFragmentManager().getFragment(bundle, "fragmentList");
+				    if(f1==null){
+						Log.d("FGLSTATE", "onResume() mit Bundle. Es gibt im Bundle KEIN fragmentMain.");
+					}else{
+						Log.d("FGLSTATE", "onResume() mit Bundle. Es gibt im Bundle ein fragmentMain.");
+					
+					//TODO GOON
+						
+					}
+					
+				    if(f2==null){
+						Log.d("FGLSTATE", "onResume() mit Bundle. Es gibt im Bundle KEIN fragmentList.");
+					}else{
+						Log.d("FGLSTATE", "onResume() mit Bundle. Es gibt im Bundle ein fragmentList.");
+					
+					//TODO GOON
+						
+					}
+					
 				}else{
 					Log.d("FGLSTATE", "onResume(): Bundle ist auch im neuen intent leer");				
 				}			
@@ -388,6 +466,12 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 		//Versuch 2:
 		Bundle bundle = new Bundle();
         bundle.putString(MyMessageHandler.RESUME_MESSAGE_BUNDLE, message);
+        
+        //Versuch2b: Arraylist (für Suchelementliste)
+        ArrayList<String>listaTemp=new ArrayList<String>();
+        listaTemp.add("TEST01");
+        bundle.putStringArrayList(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT, listaTemp);
+        
         getIntent().putExtras(bundle);
         
         //Versuch 3: Mit neuem Intent UND der überschriebenenen Methode onNewIntent()
@@ -398,6 +482,14 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
         Bundle bundle02 = new Bundle();
         bundle02.putString(MyMessageHandler.RESUME_MESSAGE_BUNDLE, message);
         intent.putExtras(bundle02);
+        
+        
+        //Versuch3b: Arraylist (für Suchelementliste)
+        Bundle bundle03 = new Bundle();
+        ArrayList<String>listaTemp02=new ArrayList<String>();
+        listaTemp02.add("TEST02");
+        bundle03.putStringArrayList(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT, listaTemp02);
+        intent.putExtras(bundle03);
 		
         super.onStop();
 	}
@@ -423,25 +515,29 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 	}
 	
 	public void onSaveInstanceState(Bundle outState){
-		
+		super.onSaveInstanceState(outState);
 		//NOTWENDIG ZUM PERSISTIERN DER DATEN IM BUNDLE
-				//super.onSaveInstanceState(outState);
-				//FGL: Rufe beim Überschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
-				
-				//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Gerät verbunden sein.
-						//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
-						//            und Eclipse neu starten muss.
-						Log.d("FGLSTATE", "onSaveInstanceState() wurde aktiviert");
-				
-				
-				//GRUND: SERIALIZIERUNG geht nur mit expliziter Klasse, ggf. reicht auch hier ein "dreckiger" Typecast
-				String sMessage = this.getMessageCurrent();
-				outState.putSerializable(MyMessageHandler.KEY_MESSAGE_CURRENT, sMessage); //liste darf nicht das Interface sein, sondern muss explizit die Klasse ArrayList sein.
-				super.onSaveInstanceState(outState);
+		//FGL: Rufe beim Überschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
+		
+		//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Gerät verbunden sein.
+				//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
+				//            und Eclipse neu starten muss.
+		Log.d("FGLSTATE", "onSaveInstanceState() wurde aktiviert");
+		
+		
+		//GRUND: SERIALIZIERUNG geht nur mit expliziter Klasse, ggf. reicht auch hier ein "dreckiger" Typecast
+		String sMessage = this.getMessageCurrent();
+		outState.putSerializable(MyMessageHandler.KEY_MESSAGE_CURRENT, sMessage); //liste darf nicht das Interface sein, sondern muss explizit die Klasse ArrayList sein.
+		
+		//20161128: FGL06 - nun auch die Fragments speichern
+		//Save the fragment's instance
+	    getSupportFragmentManager().putFragment(outState, "fragmentMain", this.fragmentMain);
+	    getSupportFragmentManager().putFragment(outState, "fragmentList", this.fragmentList);							
 	}
 	
 	@Override
 	public void onRestoreInstanceState(Bundle inState){
+		super.onRestoreInstanceState(inState);
 		//NOTWENDIG ZUM ZURUECKHOLEN DER PERSISTIERTEN DATEN AUS DEM BUNDEL. 
 		//WIRD ABER NUR BEI onCreate() aufgerufen
 		
@@ -461,8 +557,14 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 		Log.d("FGLSTATE", "onRestoreInstanceState() mit sMessage="+sMessage);
 		this.setMessageCurrent(sMessage);	
 		
+		//20161128: FGL06 - nun auch die Fragments speichern
+		//load the fragment's instance
+		this.fragmentMain = (PlaceholderFragmentMain) getSupportFragmentManager().getFragment(inState, "fragmentMain");
+		this.fragmentList = (PlaceholderFragmentList) getSupportFragmentManager().getFragment(inState, "fragmentList");
+				
+		
 		//klappst so nicht, versuche die Methode der Elternklasse danach aufzurufen.
-		super.onRestoreInstanceState(inState);
+		//super.onRestoreInstanceState(inState);
 	}
 	
 	
@@ -471,9 +573,9 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 	/**
 	 * A placeholder fragment containing a simple view.
 	 */
-	public static class PlaceholderFragment extends Fragment {
+	public static class PlaceholderFragmentMain extends Fragment {
 
-		public PlaceholderFragment() {
+		public PlaceholderFragmentMain() {
 		}
 
 		@Override
@@ -492,6 +594,9 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 		private ArrayList<String> listaSearchString = new ArrayList<String>();//Für die Liste der Suchwerte, sie wird gefüllt. Wenn sie leer ist, wird ein spezieller "Leereintrag" angezeigt.
 		private ArrayList<String>getSearchElements(){
 			return listaSearchString;
+		}
+		private void setSearchElements(ArrayList<String> listaSearchString){
+			this.listaSearchString = listaSearchString;
 		}
 		
 		private ArrayAdapter arrayAdapter;
@@ -513,7 +618,7 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 			//2. Versuch: NullPointer Exception: Attempt to get length of null Array.
 			//The toArray() method without passing any argument returns Object[]. So you have to pass an array as an argument, which will be filled with the data from the list, and returned. You can pass an empty array as well, but you can also pass an array with the desired size.
 			String[] saTemp = listaSearchString.toArray(new String[listaSearchString.size()]);														
-			Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() saTemp erzeugt.");
+			Log.d("FGLSTATE", "PlaceholderFragementList.addElement() saTemp erzeugt.");
 			
 			//das Adapter Benachrichtigen reicht nicht
 //			this.getArrayAdapter().notifyDataSetChanged();			
@@ -529,17 +634,28 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 //			}
 			
 			ListView vwList = (ListView) ((AppCompatActivity) getContext()).findViewById(R.id.list_search_web);
-			ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, saTemp);//Haken werden hinter den Elementen angezeigt.
-			this.setArrayAdapter(myArrayAdapter);//20161128: das funktioniert... ist aber eine nicht so toll, immer korrekt angepasste Breite der Einträge.
-
-			Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() Arrayadapter neu gefüllt.");
-			vwList.setAdapter(myArrayAdapter);	
-			//vwList.invalidateViews();//20161128: Dies nicht machen, sonst wird jedesmal diese View 'zusätzlich' geladen (zumindest in meinen Tests)
-	        vwList.refreshDrawableState();				
+			if(vwList!=null){
+				ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, saTemp);//Haken werden hinter den Elementen angezeigt.
+				this.setArrayAdapter(myArrayAdapter);//20161128: das funktioniert... ist aber eine nicht so toll, immer korrekt angepasste Breite der Einträge.
+	
+				Log.d("FGLSTATE", "PlaceholderFragementList.addElement() Arrayadapter neu gefüllt.");
+				vwList.setAdapter(myArrayAdapter);	
+				//vwList.invalidateViews();//20161128: Dies nicht machen, sonst wird jedesmal diese View 'zusätzlich' geladen (zumindest in meinen Tests)
+		        vwList.refreshDrawableState();	
+		        
+		        //Mache den Button "Suche per Liste" aktiviert.
+		        Button buttonSearchFromList = (Button)((AppCompatActivity)getContext()).findViewById(R.id.button_search_web_from_list);
+		        if(buttonSearchFromList!=null){
+		        	buttonSearchFromList.setEnabled(true);
+		        	buttonSearchFromList.setClickable(true);
+		        }//buttonSearchFromList != null
+			}//vwList!=null
+	    
 		}
 
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
+			Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView(): START.");
 			View rootView = inflater.inflate(R.layout.fragment_main_list, container, false);
 			
 			//Hier, versuche die ListView zu füllen
@@ -551,9 +667,33 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 			}else{
 				Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() vwList gefunden.");
 
-				//Teste auf gefüllte Liste
-				//initialisiereListTestElemente();
-							
+				
+				//Versuche einen Eintrag für "keine Elemente" bereitzustellen. Mache dies nur im "onCreate" (und nicht im start()), da ansonsten beim Betätigen des "Return" Buttons mehrer dieser Einträge passieren.
+				//Remember to place the emptyView after binding the adapter to listview.Mine was not working for first time and after I moved the setEmptyView after the setAdapter it is now working.
+				TextView txtNoItems = noItems(vwList, getResources().getString(R.string.element_search_web_from_list_empty));
+				Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() Leerlisteneintrag txtNoItems erzeugt.");
+				
+				vwList.setEmptyView(txtNoItems);
+				Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() Leerlisteneintrag txtNoItems gesetzt.");
+				
+				if(savedInstanceState==null){
+					Log.d("FGLSTATE", "PlaceholderFragmentList.onCreateView() mit Bundle 'savedInstanceState' ist NULL.");
+					
+					//Teste auf gefüllte Liste
+					//initialisiereListTestElemente();
+				}else{
+					Log.d("FGLSTATE", "PlaceholderFragmentList.onCreateView() mit Bundle 'savedInstanceState' gefunden.");
+					
+					//Stelle die Liste mit Suchelementen wieder her
+					
+					//GRUND: SERIALIZIERUNG geht nur mit expliziter Klasse, ggf. reicht auch hier ein "dreckiger" Typecast		
+					ArrayList<String> listaTemp = (ArrayList<String>) savedInstanceState.get(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT);
+					Log.d("FGLSTATE", "PlaceholderFragmentList.onCreateView() mit Bundle '" + listaTemp.size() + "' ArrayList SuchListen-Elementen.");
+					this.setSearchElements(listaTemp);						
+				}
+				
+			
+				//Zeige die Liste mit Suchelementen an.			
 				if(this.listaSearchString.isEmpty()){
 					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() ArrayList für Elemente ist leer.");
 					//Merke: Im onStart wird ein Element erstellt, dass angezeigt werden soll, wenn die Liste leer ist.
@@ -580,17 +720,86 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 		public void onStart() {
 		    super.onStart();
 		    Log.d("FGLSTATE", "PlaceholderFragementList.onStart()");
-		    ListView vwList = (ListView) ((AppCompatActivity) getContext()).findViewById(R.id.list_search_web);
+		   
+		    //Entferne ggfs. schon vorhandene Views, sonst bekommt man z.B. den "keine einträge" Eintrag mehrfach.
+		    //ListView vwList = (ListView) ((AppCompatActivity) getContext()).findViewById(R.id.list_search_web);
+		    //vwList.removeAllViews(); //darf hier nicht ausgeführt werden.
+		    //darf wohl ausgeführt werden, aber bewirkt nichts.   vwList.removeAllViewsInLayout();
 		    
+		    /* weil der Eintrag "keine einträge" verdoppelt wird beim Benutzen des Return Buttons diesen Code nach "onCreate" verschieben.
 			//Remember to place the emptyView after binding the adapter to listview.Mine was not working for first time and after I moved the setEmptyView after the setAdapter it is now working.
 			TextView txtNoItems = noItems(vwList, getResources().getString(R.string.element_search_web_from_list_empty));
 			Log.d("FGLSTATE", "PlaceholderFragementList.onStart() Leerlisteneintrag txtNoItems erzeugt.");
 			
 			vwList.setEmptyView(txtNoItems);
 			Log.d("FGLSTATE", "PlaceholderFragementList.onStart() Leerlisteneintrag txtNoItems gesetzt.");
+			*/
 		}
 		
+		public void onSaveInstanceState(Bundle outState){
+			
+			//NOTWENDIG ZUM PERSISTIERN DER DATEN IM BUNDLE
+					//super.onSaveInstanceState(outState);
+					//FGL: Rufe beim Überschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
+					
+					//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Gerät verbunden sein.
+							//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
+							//            und Eclipse neu starten muss.
+					Log.d("FGLSTATE", "PlaceholderFragmentList.onSaveInstanceState() wurde aktiviert");
+					
+					
+					//GRUND: SERIALIZIERUNG geht nur mit expliziter Klasse, ggf. reicht auch hier ein "dreckiger" Typecast
+					ArrayList<String> listaTemp = this.getSearchElements();
+					Log.d("FGLSTATE", "PlaceholderFragmentList.onSaveInstanceState(): Es sind '" + listaTemp.size() + "' Elemente in der Liste.");
+					outState.putSerializable(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT, listaTemp); //liste darf nicht das Interface sein, sondern muss explizit die Klasse ArrayList sein.
+					super.onSaveInstanceState(outState);
+					
+					//Merke: Bei Fragments gibt es keine onRestoreInstanceState()-Methode. Hole das Bundle in onActivityCreated ab.
+		}
 		
+		public void onActivityCreated(Bundle savedInstanceState){
+			super.onActivityCreated(savedInstanceState);	
+			Log.d("FGLSTATE", "PlaceholderFragmentList.onActivityCreated(bundle) wurde aktiviert");
+			if(savedInstanceState!=null){
+				//GRUND: SERIALIZIERUNG geht nur mit expliziter Klasse, ggf. reicht auch hier ein "dreckiger" Typecast		
+				ArrayList listaTemp = (ArrayList) savedInstanceState.get(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT);
+				Log.d("FGLSTATE", "PlaceholderFragmentList.onActivityCreated() mit Bundle '" + listaTemp.size() + "' ArrayList SuchListen-Elementen.");
+				this.setSearchElements(listaTemp);			
+				
+				if(this.listaSearchString.isEmpty()){
+					Log.d("FGLSTATE", "PlaceholderFragementList.onActivityCreated() ArrayList für Elemente ist leer.");
+					//Merke: Im onStart wird ein Element erstellt, dass angezeigt werden soll, wenn die Liste leer ist.
+				}else{
+					Log.d("FGLSTATE", "PlaceholderFragementList.onActivityCreated() ArrayList mit Elementen ist gefüllt. Anzahl Elemente: " + listaSearchString.size());
+					
+					//Hier, versuche die ListView zu füllen
+					ListView vwList;					
+					vwList = (ListView) getActivity().findViewById(R.id.list_search_web);
+					if(vwList==null){
+						Log.d("FGLSTATE", "PlaceholderFragementList.onActivityCreated() vwList ist NULL.");
+						
+					}else{
+						Log.d("FGLSTATE", "PlaceholderFragementList.onActivityCreated() vwList gefunden.");
+
+						//1. Versuch: Cast Fehler. man man nicht Object[] in String[] casten  ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, (String[])listaSearchString.toArray());//Haken werden hinter den Elementen angezeigt.
+						//2. Versuch: NullPointer Exception: Attempt to get length of null Array.
+						//The toArray() method without passing any argument returns Object[]. So you have to pass an array as an argument, which will be filled with the data from the list, and returned. You can pass an empty array as well, but you can also pass an array with the desired size.
+						String[] saTemp = listaSearchString.toArray(new String[listaSearchString.size()]);
+																	
+						Log.d("FGLSTATE", "PlaceholderFragementList.onActivityCreated() saTemp erzeugt.");
+						ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, saTemp);//Haken werden hinter den Elementen angezeigt.
+						this.setArrayAdapter(myArrayAdapter);
+						Log.d("FGLSTATE", "PlaceholderFragementList.onActivityCreated() Arrayadapter erzeugt.");
+						vwList.setAdapter(myArrayAdapter);	
+						Log.d("FGLSTATE", "PlaceholderFragementList.onActivityCreated() Arrayadapter gesetzt.");	
+					}																					
+				}		//end if(this.listaSearchString.isEmpty()){					
+			}else{
+				Log.d("FGLSTATE", "PlaceholderFragementList.onActivityCreated() savedInstanceState==null.");
+			}//end if(savedInstanceState!=null){							
+		}
+		
+				
 		private TextView noItems(ListView listView, String text) {
 			//Merke1: 
 			//ListView als Argument aufgenommen. Abgewandelt von einem Beispiel für ListFragments.

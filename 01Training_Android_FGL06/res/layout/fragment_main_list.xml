@@ -13,28 +13,28 @@
 
     <TextView
         android:id="@+id/textView1"
-         android:layout_width="match_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:text="@string/label_search_web_from_list" 
+        android:text="@string/label_search_web_from_list"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
-    <LinearLayout
+    <RelativeLayout
+        android:id="@+id/RelativeLayout1"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical" >
 
         <ListView
             android:id="@+id/list_search_web"
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="192dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
             android:choiceMode="multipleChoice"
             android:scrollbars="vertical|horizontal" >
-
         </ListView>
-    </LinearLayout>
-
-        <requestFocus />
+    </RelativeLayout>
 
     <Button
         android:id="@+id/button_search_web_from_list"
@@ -42,7 +42,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="23dp"
+        android:enabled="true"
+        android:clickable="false"
         android:onClick="sendMessageToSearchWeb"
         android:text="@string/button_search_web_from_list" />
+
+    <requestFocus />
 
 </LinearLayout>

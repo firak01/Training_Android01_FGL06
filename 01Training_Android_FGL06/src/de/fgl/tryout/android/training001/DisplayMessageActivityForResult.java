@@ -1,5 +1,7 @@
 package de.fgl.tryout.android.training001;
 
+import java.util.ArrayList;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
@@ -15,11 +17,12 @@ import android.widget.TextView;
 
 //FGL06 - Mache hieraus eine ActionBarActivity
 //.... extends Activity
-//Damit eine Menüleiste angezeigt wird. Aber ActionBarActivity ist deprecated
+//Damit eine Menüleiste angezeigt wird. Aber ActionBarActivty ist deprecated
 //Lösung:
 //AppCompatActivity wird über die SupportBibiothek (V7) eingebunden.
-public class DisplayMessageActivityForResult extends AppCompatActivity {		
-	private String sMessageCurrent;
+public class DisplayMessageActivityForResult<T> extends AppCompatActivity {	
+	private MyMessageStoreFGL<T> objStore=null;
+	private String sMessageCurrent=null;
 	
 	/**
 	 * @param message
@@ -30,10 +33,22 @@ public class DisplayMessageActivityForResult extends AppCompatActivity {
 		Log.d("FGLSTATE", this.getClass().getSimpleName()+". setMessageCurrent() für '" + message + "'");
 		
 	}
-	private String getMessageCurrent(){
-		Log.d("FGLSTATE", this.getClass().getSimpleName()+". getMessageCurrent() für '" + this.sMessageCurrent + "'");
+	private String getMessageCurrent(){		
+		if(this.sMessageCurrent==null) this.sMessageCurrent=new String("");
+		
 		return this.sMessageCurrent;		
 	}
+	
+	private void setMessageStore(MyMessageStoreFGL<T> objStore){
+		this.objStore = objStore;
+	}
+	private MyMessageStoreFGL<T> getMessageStore(){
+		if(this.objStore==null){
+			this.objStore = new MyMessageStoreFGL<T>();
+		}
+		return this.objStore;
+	}
+	
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -45,12 +60,30 @@ public class DisplayMessageActivityForResult extends AppCompatActivity {
 		//++++++++++++++++++++++++++++++++++++++++++++++
 				// Get the message from the intent
 				Intent intent = getIntent();
-				String message = intent.getStringExtra(MyMessageHandler.EXTRA_MESSAGE);
-				this.setMessageCurrent(message);
+				
+				//FGL 20161125: Statt den String direkt zu übernehmen jetzt ein StoreObjekt verwenden, in dem auch Werte enthalten sind,
+				//                     die ggfs. nur zwischengespeichert wurden, um sie an eine andere Activity weiter/wieder zurückzugeben.
+				//String message = intent.getStringExtra(MyMessageHandler.EXTRA_MESSAGE);
+											
+				// Get the Message from the StoreObject, stored in the intent.
+				MyMessageStoreFGL objStore = (MyMessageStoreFGL) intent.getSerializableExtra(MyMessageHandler.EXTRA_STORE);
+				if(objStore==null){
+					Log.d("FGLTEST", "Methode sDisplayActivity.onCreate(..) - StoreObject IS NULL.");
+				}else{
+					Log.d("FGLTEST", "Methode sDisplayActivity.onCreate(..) - StoreObject FOUND.");
+					this.setMessageStore(objStore);
+					String sMessage = this.getMessageStore().getString(MyMessageHandler.EXTRA_MESSAGE);
+					Log.d("FGLTEST", "Methode sDisplayActivity.onCreate(..) - String from StoreObject = '"+sMessage + "'");
+										
+					this.setMessageCurrent(sMessage);
+				}
+				
+				
+			
 				//++++++++++++++++++++++++++++++++++++++++++++++
 				int iColor;
 				String alarmMessagePrefix = "Alarm";
-				if(message.startsWith(alarmMessagePrefix)){
+				if(this.getMessageCurrent().startsWith(alarmMessagePrefix)){
 					iColor = Color.RED;
 				}else{
 					iColor = Color.GRAY;
@@ -88,7 +121,7 @@ public class DisplayMessageActivityForResult extends AppCompatActivity {
 				// Create the text view
 			    TextView textView = new TextView(this);
 			    textView.setTextSize(40);
-			    textView.setText(message);
+			    textView.setText(this.getMessageCurrent());
 
 			    // Set the text view as the activity layout
 			    setContentView(textView);
@@ -119,7 +152,7 @@ public class DisplayMessageActivityForResult extends AppCompatActivity {
 	//FGL: Training/Adding the Action Bar / Adding Action Buttons
 		@Override
 		public boolean onOptionsItemSelected(MenuItem item) {
-			Log.d("FGLSTATE", "onOptionsItemSelected()");
+			Log.d("FGLSTATE", "DisplayMessageActivityForResult.onOptionsItemSelected()");
 			// Handle action bar item clicks here. The action bar will
 			// automatically handle clicks on the Home/Up button, so long
 			// as you specify a parent activity in AndroidManifest.xml.
@@ -136,28 +169,43 @@ public class DisplayMessageActivityForResult extends AppCompatActivity {
 			//   Dann bleibt der Wert als Variable in der Activity vorhanden.
 			//b) Wenn über den Zurück-Button in der ActionBar gearbeitet wird, sind die Werte in onResume() nur entgegenzunehmen,
 			//   durch einen Intent, in dem man den Wert speichert.
-			//c) IDEE: Versuche aus der Hauptaktivit�t mal die DisplayMessageActivity02 aufzurufen mit
+			//c) IDEE: Versuche aus der Hauptaktivität mal die DisplayMessageActivity02 aufzurufen mit
 			//         startActivityForResult(). Vielleicht geht es dann einfacher.
 			//
 			if(id==16908332){
 				//If Abfrage, weil in der Switch-Case Anweisung der Vergleich nicht zu klappen scheint.
-				Log.d("FGLSTATE", "onOptionsItemSelected() für speziell definierte actionBarId gefunden.");
+				Log.d("FGLSTATE", "DisplayMessageActivityForResult.DisplayMessageActivityForResult.onOptionsItemSelected() für speziell definierte actionBarId gefunden.");
 				
-				//Versuch X: Gib an die aufgerufene Funktion den Wert zur�ck
+				
+				//TODO GOON FGL 20161202: Packe den neuen Wert in das StoreObjekt zurück.
+				//                                        Packe Testweise die Dummy-ArrayListe in das StoreObjekt.
+				//                                        Packe das StoreObjekt in das Bundle
+				//                                        Hole in der MainActivity die Werte zurück.....
+				
+				//Versuch X: Gib an die aufgerufene Funktion den Wert zurück
 	    		Bundle bundle = new Bundle();
 	            bundle.putString(MyMessageHandler.RESUME_MESSAGE_BUNDLE, this.getMessageCurrent());
-	            //nat�rlich nicht in den Intent Packen, der dieser Activity beim Start mitgegeben worden ist getIntent().putExtras(bundle);
+	            //natürlich nicht in den Intent Packen, der dieser Activity beim Start mitgegeben worden ist getIntent().putExtras(bundle);
+	            
+	            //TODO GOON: Packe testweise eine ArrayListe hier herein, versuche diese dann entgegenzunehmen.
+	            //                    Das Ziel ist es so die ArrayListe im ListenFragment auch zu füllen.
+	            //Versuch3b: Arraylist (für Suchelementliste)
+	            Bundle bundle03 = new Bundle();
+	            ArrayList<String>listaTemp02=new ArrayList<String>();
+	            listaTemp02.add("TEST02");
+	            bundle03.putStringArrayList(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT, listaTemp02);	               			         
 	            
 	            //Start an intent mit dem Ziel diesen in der onResume Methpde entgegenzunehmen.
 	    		Intent intent = new Intent(this, MainActivity.class);	    		
 	    		intent.putExtras(bundle);
+	    		intent.putExtras(bundle03);
 	      		startActivity(intent); //Merke: Nachteil ist, das jeder Activity-Start quasi in eine History kommt. 
-	      		                       //       Das bedeutet, dass der Zur�ck-Button des Ger�ts erst einmal alle Activities aus der Historie durchl�uft,
-	      		                       //       wenn man ihn in der Hauptmaske bet�tigt.
+	      		                       //       Das bedeutet, dass der Zurück-Button des Geräts erst einmal alle Activities aus der Historie durchläuft,
+	      		                       //       wenn man ihn in der Hauptmaske benötigt.
 	    		
 				
 			}else{
-				Log.d("FGLSTATE", "onOptionsItemSelected() für speziell definierte actionBarId NICHT gefunden.");
+				Log.d("FGLSTATE", "DisplayMessageActivityForResult.onOptionsItemSelected() für speziell definierte actionBarId NICHT gefunden.");
 				
 				// Handle presses on the action bar items
 			    switch (id) {
@@ -171,16 +219,16 @@ public class DisplayMessageActivityForResult extends AppCompatActivity {
 			            openSettings();
 			            return true;
 			        case R.id.home:
-			        	Log.d("FGLSTATE", "onOptionsItemSelected() für HOME item.id= '" + id + "'");
+			        	Log.d("FGLSTATE", "DisplayMessageActivityForResult.onOptionsItemSelected() für HOME item.id= '" + id + "'");
 			        case R.id.homeAsUp:
-			        	Log.d("FGLSTATE", "onOptionsItemSelected() für HOMEASUP item.id= '" + id + "'");
+			        	Log.d("FGLSTATE", "DisplayMessageActivityForResult.onOptionsItemSelected() für HOMEASUP item.id= '" + id + "'");
 			        case R.id.up:
-			        	Log.d("FGLSTATE", "onOptionsItemSelected() für HUP item.id= '" + id + "'");
+			        	Log.d("FGLSTATE", "DisplayMessageActivityForResult.onOptionsItemSelected() für HUP item.id= '" + id + "'");
 			        case 16908332:
-			        	//DAS WIRD AUS iregendeinem Grund nicht ausgef�hrt. Darum in den if-Abfrage vorneweg verlagert.
-			        	Log.d("FGLSTATE", "onOptionsItemSelected() für speziell definierte actionBarId ohne in R-Klasse vohranden zu sein: item.id= '" + id + "'");	        		        
+			        	//DAS WIRD AUS iregendeinem Grund nicht ausgeführt. Darum in den if-Abfrage vorneweg verlagert.
+			        	Log.d("FGLSTATE", "DisplayMessageActivityForResult.onOptionsItemSelected() für speziell definierte actionBarId ohne in R-Klasse vohranden zu sein: item.id= '" + id + "'");	        		        
 			        default:
-			        	Log.d("FGLSTATE", "onOptionsItemSelected() für default item.id= '" + id + "'");
+			        	Log.d("FGLSTATE", "DisplayMessageActivityForResult.onOptionsItemSelected() für default item.id= '" + id + "'");
 			            return super.onOptionsItemSelected(item);
 			    }
 			}
