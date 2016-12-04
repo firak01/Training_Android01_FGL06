@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Adapter;
@@ -31,18 +32,26 @@ import android.widget.TextView;
  * Aus developer.android.com Training/Building Your First App
  * @Date   2014-05-06
  * @author Fritz Lindhauer
+ * @param <T>
  *
  */
-public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //Merke: ActionBarActivity is deprecated
-	private String sMessageCurrent=null;	
-	private MyVersionBox versionBox = null;
-	private MyVersionHtmlBox versionHtmlBox = null;
-	private MyAboutBox aboutBox = null;
-	
-	//Fragments wegsichern, damit man sie wiederherstellen kann
+public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { //Merke: ActionBarActivity is deprecated
+	//Fragments wegsichern, damit man sie wiederherstellen kann (theoretisch)
 	private PlaceholderFragmentList  fragmentList;
 	private PlaceholderFragmentMain fragmentMain;
 	
+	private MyMessageStoreFGL<T> objStore=null;
+	private void setMessageStore(MyMessageStoreFGL<T> objStore){
+		this.objStore = objStore;
+	}
+	private MyMessageStoreFGL<T> getMessageStore(){
+		if(this.objStore==null){
+			this.objStore = new MyMessageStoreFGL<T>();
+		}
+		return this.objStore;
+	}
+	
+	private MyVersionBox versionBox = null;
 	public MyVersionBox getVersionBox() {
 		if(this.versionBox==null){
 			MyVersionBox a = new MyVersionBox();
@@ -50,11 +59,11 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 		}
 		return this.versionBox;
 	}
-
 	public void setVersionBox(MyVersionBox versionBox) {
 		this.versionBox = versionBox;
 	}	
 	
+	private MyVersionHtmlBox versionHtmlBox = null;
 	public MyVersionHtmlBox getVersionHtmlBox() {
 		if(this.versionHtmlBox==null){
 			MyVersionHtmlBox a = new MyVersionHtmlBox();
@@ -62,11 +71,11 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 		}
 		return this.versionHtmlBox;
 	}
-
 	public void setVersionHtmlBox(MyVersionHtmlBox versionHtmlBox) {
 		this.versionHtmlBox = versionHtmlBox;
 	}	
 	
+	private MyAboutBox aboutBox = null;
 	public MyAboutBox getAboutBox() {
 		if(this.aboutBox==null){
 			MyAboutBox a = new MyAboutBox();
@@ -77,16 +86,17 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 	public void setAboutBox(MyAboutBox aboutBox) {
 		this.aboutBox = aboutBox;
 	}
-
-
+	
+//############################################################################################
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+		Log.d("FGLSTATE", "MainActivity.onCreate() : START");
 		// Set the user interface layout for this Activity
 	    // The layout file is defined in the project res/layout/main_activity.xml file
 		setContentView(R.layout.activity_main);
 
 		if (savedInstanceState == null) {
+			Log.d("FGLSTATE", "MainActivity.onCreate() wurde aktiviert. KEIN SAVEDINSTANCESTATE vorhanden");
 			this.fragmentMain =  new PlaceholderFragmentMain();
 			this.fragmentMain.setRetainInstance(true);
 			getSupportFragmentManager().beginTransaction()
@@ -102,23 +112,7 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 			//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
 			//            und Eclipse neu starten muss.
 			Log.d("FGLSTATE", "MainActivity.onCreate() wurde aktiviert. MIT SAVEDINSTANCESTATE vorhanden");
-			 
-        	//Notwendiger Zweig um Persistierung zurückzuholen. Siehe auch onResume().
-        	String sMessageCurrent = (String) savedInstanceState.getSerializable(MyMessageHandler.KEY_MESSAGE_CURRENT);
-        	Log.d("FGLSTATE", "MainActivity.onCreate(): sMessageCurrent = " + sMessageCurrent);
-			
-        	if(!StringZZZ.isEmptyNull(sMessageCurrent)&& !StringZZZ.isBlank(sMessageCurrent) & !StringZZZ.isWhitespace(sMessageCurrent)){
-	        	this.setMessageCurrent(sMessageCurrent);
-	        	
-	        	//Sollte man nun irgendwie den String zurück-/einsetzen?
-	        	EditText editText = (EditText) findViewById(R.id.edit_message);
-	        	if(editText==null){
-	        		Log.d("FGLSTATE", "MainActivity.onCreate(): EditText - Element im UI nicht gefunden.");	    			
-	        	}else{
-	        		editText.setText(sMessageCurrent + " (wiederhergestellt)");
-	        	}
-        	}   
-        	
+			 	
 	         this.fragmentList = (PlaceholderFragmentList) getSupportFragmentManager().getFragment(savedInstanceState,"fragmentList");
 	         this.fragmentMain = (PlaceholderFragmentMain) getSupportFragmentManager().getFragment(savedInstanceState,"fragmentMain");
         }//end 	if (savedInstanceState == null) {
@@ -127,7 +121,6 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
@@ -158,8 +151,7 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 			//MyVersionAboutBox versionAboutBox = new MyVersionAboutBox(versionHandler);
 			//this.getVersionAboutBox().setVersionHandler(versionHandler);
 			this.getAboutBox().Show(MainActivity.this);
-			//versionAboutBox.Show(this);
-			
+			//versionAboutBox.Show(this);			
 		}
 		if(id== R.id.action_version_txt){
 			//Darstellung der Version Box, basierend auf einem TextString
@@ -171,8 +163,7 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 			//final Intent intent = new Intent(this, DisplayWebviewActivityForVersion.class);
 			//startActivity(intent);
 			this.getVersionHtmlBox().Show(MainActivity.this);
-		}
-		
+		}		
 		return super.onOptionsItemSelected(item);
 	}
 	
@@ -200,108 +191,12 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 	}
 	
 	
-	/** Called when the user clicks the Send button */
-	public void sendMessage(View view) {
-	    //Start an intent
-		Intent intent = new Intent(this, DisplayMessageActivity.class);
-		EditText editText = (EditText) findViewById(R.id.edit_message);
-		String message = editText.getText().toString();
-		
-		//Besser als das Standard String.replace und Pattern zu verwenden ist hier die JAZKernel-Hilfsklasse
-		message = MyMessageHandler.createNormedMessage(message);		
-		Log.d("FGLSTATE", "sendessage(): message nach der Normierung = " + message);
-		
-		//Speichere die message in eine lokale Variable. Grund: So kann man sie dann wegsichern wenn sich der State des Ger�ts �ndert.
-		this.setMessageCurrent(message);
-				
-		intent.putExtra(MyMessageHandler.EXTRA_MESSAGE, message);
-		startActivity(intent);
-	}
 	
 	
-	/** Called when the user clicks the SendForResult button */
-	public void sendMessageForResult(View view) {
-	    //Start an intent
-		Intent intent = new Intent(this, DisplayMessageActivityForResult.class);
-		EditText editText = (EditText) findViewById(R.id.edit_message);
-		String message = editText.getText().toString();
-		
-		//Besser als das Standard String.replace und Pattern zu verwenden ist hier die JAZKernel-Hilfsklasse		
-		message = MyMessageHandler.createNormedMessage(message);				
-		Log.d("FGLSTATE", "sendessageForResult(): message nach der Normierung = " + message);
-		
-		//Speichere die message in eine lokale Variable. Grund: So kann man sie dann wegsichern wenn sich der State des Geräts ändert.
-		this.setMessageCurrent(message);
-		
-		//-----------------------------
-		//TODO GOON 20161129: Mache eine Hilfsklasse, für das Wegsichern und auch wieder Zurückholen von den Intent-Informationen zwischen den Activities.
-		MyMessageStoreFGL objStore = new MyMessageStoreFGL();
-			
-			//Fülle den Store mit dem Eintrag
-		objStore.put(MyMessageHandler.EXTRA_MESSAGE, message); //IDEE: das sollte der Wert der UI-Komponente sein, also R.id.edit_message
-		
-			//Übergib den Store als ganzes an den Intent
-		intent.putExtra(MyMessageHandler.EXTRA_STORE, objStore);//objStore muss serializable sein
-		//------------------------------
-		
-		intent.putExtra(MyMessageHandler.EXTRA_MESSAGE, message);
-		startActivityForResult(intent,1);
-	}
 	
 	
-	/* (non-Javadoc)
-	 * @see android.app.Activity#onActivityResult(int, int, android.content.Intent)
-	 * 27.07.2016 09:09:40 Fritz Lindhauer
-	 */
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		Log.d("FGLSTATE", "onActivityResult(): START mit requestCode='" + requestCode + "' | resultCode='"+resultCode+"'");
-	    super.onActivityResult(requestCode, resultCode, data);	    
-	    if (requestCode == 1) {
-	    		String stredittext=data.getStringExtra(MyMessageHandler.EXTRA_MESSAGE);
-	         if(resultCode == RESULT_OK){	             
-	             Log.d("FGLSTATE", "onActivityResult(): result OK. message  empfangen = " + stredittext);
-	             this.setMessageCurrent(stredittext);
-	         }else{	        	
-	        	 Log.d("FGLSTATE", "onActivityResult(): result nicht OK. message  empfangen = " + stredittext);
-	         }
-	    }
-	} 
 	
 	
-	/**Starete eine Activity mit einer WebView. Dabei werfe den eingegebenen Text als Suchstring in die URL.
-	 * @param view
-	 * 13.10.2016 10:17:34 Fritz Lindhauer
-	 */
-	public void sendMessageToSearchWeb(View view){
-		//Start an intent
-				Intent intent = new Intent(this, DisplayWebviewActivityForSearch.class);
-				EditText editText = (EditText) findViewById(R.id.edit_message);
-				String message = editText.getText().toString();
-				
-				//Besser als das Standard String.replace und Pattern zu verwenden ist hier die JAZKernel-Hilfsklasse		
-				message = MyMessageHandler.createNormedMessage(message);								
-				Log.d("FGLSTATE", "searchWeb(): message nach der Normierung = " + message);
-				
-				//Speichere die message in eine lokale Variable. Grund: So kann man sie dann wegsichern wenn sich der State des Ger�ts �ndert.
-				this.setMessageCurrent(message);
-						
-				intent.putExtra(MyMessageHandler.EXTRA_MESSAGE, message);
-				startActivity(intent);			
-	}
-	
-	/**
-	 * @param message
-	 * 15.07.2016 08:26:09 Fritz Lindhauer
-	 */
-	private void setMessageCurrent(String message) {
-		this.sMessageCurrent= message;
-		Log.d("FGLSTATE", "MainActivity.setMessageCurrent() für '" + message + "'");
-		
-	}
-	private String getMessageCurrent(){
-		Log.d("FGLSTATE", "MainActivity.getMessageCurrent() für '" + this.sMessageCurrent + "'");
-		return this.sMessageCurrent;		
-	}
 
 	/* (non-Javadoc)
 	 * @see android.support.v4.app.FragmentActivity#onPause()
@@ -345,6 +240,7 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 	 * @see android.support.v4.app.FragmentActivity#onResume()
 	 * 14.07.2016 08:06:14 Fritz Lindhauer
 	 */
+	@SuppressWarnings("unchecked")
 	public void onResume(){
 		//super.onResume();
 		//FGL: Rufe beim Überschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
@@ -363,84 +259,41 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 	
 		
 				
-		//Versuche einen gespeicherten Text wiederherszustellen.
-		//Merke: Beim einfachen Wechseln zurück wird dann nicht onCreate() aufgerufen, sondern onResume(), 
-		//       darum gehört der Code hierher, ABER: savedInstanceState ist hier nicht vorhanden.
-    	//String sMessageCurrent = (String) savedInstanceState.getSerializable(KEY_MESSAGE_CURRENT);
-    	//this.setMessageCurrent(sMessageCurrent);
-    	
-		//Damit das funktioniert muss onRestoreInstanceState() ausgeführt werden und es muss die lokale Property wieder gefüllt worden sein.
-		String sMessageCurrent = this.getMessageCurrent();
-		Log.d("FGLSTATE", "onResume(): Wert per Variable sMessageCurrent = " + sMessageCurrent);
-		
-		if(!StringZZZ.isEmptyNull(sMessageCurrent)&& !StringZZZ.isBlank(sMessageCurrent) & !StringZZZ.isWhitespace(sMessageCurrent)){
-			//1. Variante: Als Variable
-			EditText editText = (EditText) findViewById(R.id.edit_message);
-			editText.setText(sMessageCurrent + MyMessageHandler.MESSAGE_ADDITION_VARIABLE);			
-		}else{
-			//2. Variante als "StringExtra"			
-			//Das ist der Normalefall: Die Variable ist nämlich weg.
-			//Nun Versuch sie in inStop() über einen Intent.getExtras zu sichern und hier wiederherzustellen
-			sMessageCurrent=getIntent().getStringExtra(MyMessageHandler.RESUME_MESSAGE);
-			Log.d("FGLSTATE", "onResume(): Wert per intent sMessageCurrent = " + sMessageCurrent);			
-					
-			if(!StringZZZ.isEmptyNull(sMessageCurrent)&& !StringZZZ.isBlank(sMessageCurrent) & !StringZZZ.isWhitespace(sMessageCurrent)){
-				//DAS FUNKTIONIERT GGFS. AUCH NICHT!!!
-				EditText editText = (EditText) findViewById(R.id.edit_message);
-				editText.setText(sMessageCurrent + MyMessageHandler.MESSAGE_ADDITION_INTENT);
-			}else{
-				//3. Variante: Als Bundle aus getExras()
-				Bundle bundle = getIntent().getExtras();
-				if(bundle!=null){
-					sMessageCurrent = bundle.getString(MyMessageHandler.RESUME_MESSAGE_BUNDLE);
-					Log.d("FGLSTATE", "onResume(): Wert per intent und bundle sMessageCurrent = " + sMessageCurrent);
-					
-					if(!StringZZZ.isEmptyNull(sMessageCurrent)&& !StringZZZ.isBlank(sMessageCurrent) & !StringZZZ.isWhitespace(sMessageCurrent)){
-						EditText editText = (EditText) findViewById(R.id.edit_message);
-						editText.setText(sMessageCurrent + MyMessageHandler.MESSAGE_ADDITION_BUNDLE);
-					}
-					
-					
-					//3b) Versuche hier auch die ArrayListe aus dem Bundle zu bekommen, für PlaceHolderFragmentList
-					//GRUND: SERIALIZIERUNG geht nur mit expliziter Klasse, ggf. reicht auch hier ein "dreckiger" Typecast		
-					ArrayList listaTemp = (ArrayList) bundle.get(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT);
-					//MERKE: Wenn hier ein Fehler produziert wird, ist die Liste im Fragment vorhanden... Warum?
-					if(listaTemp==null){
-						Log.d("FGLSTATE", "onResume() mit Bundle. Es gibt kein Bundle für ArrayList SuchListen-Elemente.");
-					}else{
-						Log.d("FGLSTATE", "onResume() mit Bundle. Es gibt '" + listaTemp.size() + "' ArrayList SuchListen-Elementen.");
-					
-					//TODO GOON
-						
-					}
-					
-					//3c) Fragments finden
-					//Save the fragment's instance
-				    PlaceholderFragmentMain f1 = (PlaceholderFragmentMain)getSupportFragmentManager().getFragment(bundle, "fragmentMain");
-				    PlaceholderFragmentList f2 = (PlaceholderFragmentList)getSupportFragmentManager().getFragment(bundle, "fragmentList");
-				    if(f1==null){
-						Log.d("FGLSTATE", "onResume() mit Bundle. Es gibt im Bundle KEIN fragmentMain.");
-					}else{
-						Log.d("FGLSTATE", "onResume() mit Bundle. Es gibt im Bundle ein fragmentMain.");
-					
-					//TODO GOON
-						
-					}
-					
-				    if(f2==null){
-						Log.d("FGLSTATE", "onResume() mit Bundle. Es gibt im Bundle KEIN fragmentList.");
-					}else{
-						Log.d("FGLSTATE", "onResume() mit Bundle. Es gibt im Bundle ein fragmentList.");
-					
-					//TODO GOON
-						
-					}
-					
-				}else{
-					Log.d("FGLSTATE", "onResume(): Bundle ist auch im neuen intent leer");				
-				}			
-			}
-		}
+//		//Versuche einen gespeicherten Text wiederherszustellen.
+//		//Merke: Beim einfachen Wechseln zurück wird dann nicht onCreate() aufgerufen, sondern onResume(), 
+//		//       darum gehört der Code hierher, ABER: savedInstanceState ist hier nicht vorhanden.
+//		
+//		//Damit das funktioniert muss onRestoreInstanceState() ausgeführt werden und es muss die lokale Property wieder gefüllt worden sein.
+//		String sMessageCurrent = this.getMessageCurrent();
+//		Log.d("FGLSTATE", "onResume(): Wert per Variable sMessageCurrent = " + sMessageCurrent);
+//		
+//		if(!StringZZZ.isEmptyNull(sMessageCurrent)&& !StringZZZ.isBlank(sMessageCurrent) & !StringZZZ.isWhitespace(sMessageCurrent)){
+//			//1. Variante: Als Variable
+//			EditText editText = (EditText) findViewById(R.id.edit_message);
+//			editText.setText(sMessageCurrent + MyMessageHandler.MESSAGE_ADDITION_VARIABLE);			
+//		}else{
+//			//2. Variante: Hole den Wert aus dem MessageStore, der zwischen den Activities ausgetauscht wird.
+//			//             Das ist der Normalefall: Die Variable ist nämlich normalerweise weg.
+//			MyMessageStoreFGL<T> objStore = (MyMessageStoreFGL<T>) getIntent().getSerializableExtra(MyMessageHandler.EXTRA_STORE);
+//			if(objStore!=null){
+//				this.setMessageStore(objStore);
+//											
+//				//Nun Versuch sie in inStop() über einen Intent.getExtras zu sichern und hier wiederherzustellen
+//				sMessageCurrent = objStore.getString(MyMessageHandler.RESUME_MESSAGE);
+//				Log.d("FGLSTATE", "onResume(): Wert per intent (aus MessageStore) sMessageCurrent = " + sMessageCurrent);			
+//					
+//				if(!StringZZZ.isEmptyNull(sMessageCurrent)&& !StringZZZ.isBlank(sMessageCurrent) & !StringZZZ.isWhitespace(sMessageCurrent)){
+//					//DAS FUNKTIONIERT GGFS. AUCH NICHT!!!
+//					EditText editText = (EditText) findViewById(R.id.edit_message);
+//					editText.setText(sMessageCurrent + MyMessageHandler.MESSAGE_ADDITION_INTENT);
+//				}else{
+//					Log.d("FGLSTATE", "onResume(): Wert per intent (aus MessageStore) ist leer oder NULL.");			
+//					
+//					EditText editText = (EditText) findViewById(R.id.edit_message);
+//					editText.setText("");
+//				}
+//			}
+//		}
 		super.onResume();
 	}
 	
@@ -451,46 +304,28 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 		//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Gerät verbunden sein.
 				//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
 				//            und Eclipse neu starten muss.
-				Log.d("FGLSTATE", "onStop() wurde aktiviert");
+		Log.d("FGLSTATE", "onStop() wurde aktiviert");
 				
 				
-		//Versuche für onResume() den Stringwert zu retten, der dann in onResume() ausgelesen werden soll.
-				//ABER TODO GOON 20160715: Das klappt nicht!!!
+		//Versuche den Stringwert zu retten, der dann in onResume() ausgelesen werden soll.
+		//Nutze dafür den objektMessageStore
 		EditText editText = (EditText) findViewById(R.id.edit_message);
 		String message = editText.getText().toString();			
 		Log.d("FGLSTATE", "onStop() - Sicher Message in intent weg: " + message);
-		getIntent().putExtra(MyMessageHandler.RESUME_MESSAGE, message);
 		
-		//ABER: So kann der Wert nicht in der gleichen Activity wiedergeholte werden.
-
-		//Versuch 2:
-		Bundle bundle = new Bundle();
-        bundle.putString(MyMessageHandler.RESUME_MESSAGE_BUNDLE, message);
-        
-        //Versuch2b: Arraylist (für Suchelementliste)
+		//Suchstring
+		MyMessageStoreFGL<T> objStore = this.getMessageStore();
+		objStore.put(MyMessageHandler.RESUME_MESSAGE, message);
+		
+		//Arraylist (für Suchelementliste)
         ArrayList<String>listaTemp=new ArrayList<String>();
         listaTemp.add("TEST01");
-        bundle.putStringArrayList(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT, listaTemp);
-        
-        getIntent().putExtras(bundle);
-        
-        //Versuch 3: Mit neuem Intent UND der überschriebenenen Methode onNewIntent()
-        Log.d("FGLSTATE", "onStop() - Sicher Message in NEUEM intent weg: " + message);
-        //Intent intent = new Intent(this, MainActivity.class);
-        Intent intent = new Intent();
-        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        Bundle bundle02 = new Bundle();
-        bundle02.putString(MyMessageHandler.RESUME_MESSAGE_BUNDLE, message);
-        intent.putExtras(bundle02);
-        
-        
-        //Versuch3b: Arraylist (für Suchelementliste)
-        Bundle bundle03 = new Bundle();
-        ArrayList<String>listaTemp02=new ArrayList<String>();
-        listaTemp02.add("TEST02");
-        bundle03.putStringArrayList(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT, listaTemp02);
-        intent.putExtras(bundle03);
+		objStore.put(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT, listaTemp);
 		
+		//Das Message Store Objekt wieder in den Intent schreiben.
+		getIntent().putExtra(MyMessageHandler.EXTRA_STORE, objStore);
+		//intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+	
         super.onStop();
 	}
 	
@@ -501,7 +336,7 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 		//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Gerät verbunden sein.
 				//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
 				//            und Eclipse neu starten muss.
-				Log.d("FGLSTATE", "onRestart() wurde aktiviert");
+		Log.d("FGLSTATE", "onRestart() wurde aktiviert");
 	}
 	
 	public void onStart(){
@@ -511,7 +346,7 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 		//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Gerät verbunden sein.
 				//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
 				//            und Eclipse neu starten muss.
-				Log.d("FGLSTATE", "onStart() wurde aktiviert");
+		Log.d("FGLSTATE", "onStart() wurde aktiviert");
 	}
 	
 	public void onSaveInstanceState(Bundle outState){
@@ -524,10 +359,10 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 				//            und Eclipse neu starten muss.
 		Log.d("FGLSTATE", "onSaveInstanceState() wurde aktiviert");
 		
-		
+		//TODO FGL GOON 20161203 Das ebenfalls auf den MessageObjectStore abändern.
 		//GRUND: SERIALIZIERUNG geht nur mit expliziter Klasse, ggf. reicht auch hier ein "dreckiger" Typecast
-		String sMessage = this.getMessageCurrent();
-		outState.putSerializable(MyMessageHandler.KEY_MESSAGE_CURRENT, sMessage); //liste darf nicht das Interface sein, sondern muss explizit die Klasse ArrayList sein.
+		//String sMessage = this.getMessageCurrent();
+		//outState.putSerializable(MyMessageHandler.KEY_MESSAGE_CURRENT, sMessage); //liste darf nicht das Interface sein, sondern muss explizit die Klasse ArrayList sein.
 		
 		//20161128: FGL06 - nun auch die Fragments speichern
 		//Save the fragment's instance
@@ -553,9 +388,9 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 		
 		
 		//GRUND: SERIALIZIERUNG geht nur mit expliziter Klasse, ggf. reicht auch hier ein "dreckiger" Typecast		
-		String sMessage = (String) inState.get(MyMessageHandler.KEY_MESSAGE_CURRENT);
-		Log.d("FGLSTATE", "onRestoreInstanceState() mit sMessage="+sMessage);
-		this.setMessageCurrent(sMessage);	
+//		String sMessage = (String) inState.get(MyMessageHandler.KEY_MESSAGE_CURRENT);
+//		Log.d("FGLSTATE", "onRestoreInstanceState() mit sMessage="+sMessage);
+//		this.setMessageCurrent(sMessage);	
 		
 		//20161128: FGL06 - nun auch die Fragments speichern
 		//load the fragment's instance
@@ -572,9 +407,33 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 
 	/**
 	 * A placeholder fragment containing a simple view.
+	 * ACHTUNG: Der Code für die Buttons soll hier herein. 
+	 *          Daher muss der Button Event-Listener extra hier gesetzt werden.
+	 *          Damit dann die onClick Methode vorhanden ist, muss View.OnClickListern implementiert werden.
 	 */
-	public static class PlaceholderFragmentMain extends Fragment {
-
+	public static class PlaceholderFragmentMain<T> extends Fragment implements OnClickListener{
+		private MyMessageStoreFGL<T> objStore=null;		
+		private void setMessageStore(MyMessageStoreFGL<T> objStore){
+			this.objStore = objStore;
+		}
+		private MyMessageStoreFGL<T> getMessageStore(){
+			if(this.objStore==null){
+				this.objStore = new MyMessageStoreFGL<T>();
+			}
+			return this.objStore;
+		}
+				
+		private String sMessageCurrent=null;
+		private void setMessageCurrent(String message) {
+			this.sMessageCurrent= message;
+			Log.d("FGLSTATE", "PlaceholderFragementMain.setMessageCurrent() für '" + message + "'");		
+		}
+		private String getMessageCurrent(){
+			Log.d("FGLSTATE", "PlaceholderFragementMain.getMessageCurrent() für '" + this.sMessageCurrent + "'");
+			return this.sMessageCurrent;		
+		}
+				
+		//##########################################################
 		public PlaceholderFragmentMain() {
 		}
 
@@ -583,14 +442,262 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 				Bundle savedInstanceState) {
 			View rootView = inflater.inflate(R.layout.fragment_main, container,
 					false);
-			return rootView;
+			
+			//FGL 20161204: Wenn man die Events im Fragment selbst haben will,
+			//              muss man den Event-Handler am Button hier einbauen.
+			//              sonst gibt es Fehlermeldungen der Art:
+			//12-04 06:02:41.664: E/AndroidRuntime(1778): java.lang.IllegalStateException: Could not find method sendMessage(View) in a parent or ancestor Context for android:onClick attribute defined on view class android.support.v7.widget.AppCompatButton with id 'button_send'
+			//              Alternativ dazu die Methode in der Activity belassen, was meiner Meinung nach eine unschöne Lösung ist, wg. mangelnder Kapselung.
+			Button button_send_for_result = (Button) rootView.findViewById(R.id.button_send_for_result);
+		    Button button_send = (Button) rootView.findViewById(R.id.button_send);
+		    Button button_search = (Button) rootView.findViewById(R.id.button_search_web);
+		    
+			//FGL 20161204: Das geht so nicht... zumindest in Fragments geht das nicht.
+		   /*button.setOnClickListener(new OnClickListener()
+		   {
+		             @Override
+		             public void onClick(View v)
+		             {
+		                // do something
+		             } 
+		   }); */
+			
+			//FGL 20161204: Alternativer Weg für den Listener, wenn das Fragment view.OnClickListener implementiert
+			button_send_for_result.setOnClickListener(this);
+			button_send.setOnClickListener(this);
+			button_search.setOnClickListener(this);
+												
+		   return rootView;
 		}
-	}
-	
+		
+			
+		//Damit die Events der Buttons HIER im Fragment und nicht in der Activity stehen, den Event hier abfangen und die ID auswerten.
+		//Daher muss das Fragment View.onClickListener implementieren.
+		//Jeder Button muss aber in onCreateView(...) gesucht werden und explizit mit button.setOnClickListener(this); den Listener zugewiesen bekommen.
+		@Override
+		public void onClick(View v) {
+			Log.d("FGLSTATE", "PlaceholderFragmentMain.onClick(v) wurde aktiviert");
+		    switch (v.getId()) {
+		    case R.id.button_send:
+		    	sendMessage(v);
+	            break;
+		    case R.id.button_send_for_result:
+	        	sendMessageForResult(v);
+	            break;
+	        case R.id.button_search_web:
+	        	sendMessageToSearchWeb(v);
+	            break;
+	        default: 
+	        	Log.d("FGLSTATE", "PlaceholderFragmentMain.onClick(v) noch nicht implementiert für Id v.getId() = '" + v.getId() + "'");
+	        	break;
+		    }
+		}
+		
+		public void onActivityCreated(Bundle savedInstanceState){
+			super.onActivityCreated(savedInstanceState);	
+			Log.d("FGLSTATE", "PlaceholderFragmentMain.onActivityCreated(bundle) wurde aktiviert");
+			if(savedInstanceState!=null){
+
+				//TODO: 20161204 Ändere das auf den Objekt MessageStore ab. 
+				//Notwendiger Zweig um Persistierung zurückzuholen. Siehe auch onResume().
+	        	String sMessageCurrent = (String) savedInstanceState.getSerializable(MyMessageHandler.KEY_MESSAGE_CURRENT);
+	        	Log.d("FGLSTATE", "MainActivity.onCreate(): sMessageCurrent = " + sMessageCurrent);
+				
+	        	if(!StringZZZ.isEmptyNull(sMessageCurrent)&& !StringZZZ.isBlank(sMessageCurrent) & !StringZZZ.isWhitespace(sMessageCurrent)){
+		        	this.setMessageCurrent(sMessageCurrent);
+		        	
+		        	//Sollte man nun irgendwie den String zurück-/einsetzen?
+		        	EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
+		        	if(editText==null){
+		        		Log.d("FGLSTATE", "MainActivity.onCreate(): EditText - Element im UI nicht gefunden.");	    			
+		        	}else{
+		        		editText.setText(sMessageCurrent + " (wiederhergestellt)");
+		        	}
+	        	}   
+			
+			}
+		}
+		
+		public void onSaveInstanceState(Bundle outState){
+			super.onSaveInstanceState(outState);
+			
+			//TODO: 20161203 : Das auf objectStore abändern
+			String sMessage = this.getMessageCurrent();
+			outState.putSerializable(MyMessageHandler.KEY_MESSAGE_CURRENT, sMessage); //liste darf nicht das Interface sein, sondern muss explizit die Klasse ArrayList sein.
+			
+		}
+		
+		public void onResume(){
+			super.onResume();
+			Log.d("FGLSTATE", "PlaceholderFragementMain.onResume(): START");			
+								
+			String sMessageCurrent = this.getMessageCurrent();
+			Log.d("FGLSTATE", "onResume(): Wert per Variable sMessageCurrent = " + sMessageCurrent);
+			
+			if(!StringZZZ.isEmptyNull(sMessageCurrent)&& !StringZZZ.isBlank(sMessageCurrent) & !StringZZZ.isWhitespace(sMessageCurrent)){
+				//1. Variante: Als Variable
+				EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
+				editText.setText(sMessageCurrent + MyMessageHandler.MESSAGE_ADDITION_VARIABLE);			
+			}else{
+				//2. Variante: Hole den Wert aus dem MessageStore, der zwischen den Activities ausgetauscht wird.
+				//             Das ist der Normalefall: Die Variable ist nämlich normalerweise weg.
+				MyMessageStoreFGL<T> objStore = (MyMessageStoreFGL<T>) getActivity().getIntent().getSerializableExtra(MyMessageHandler.EXTRA_STORE);
+				if(objStore==null){
+					Log.d("FGLSTATE", "PlaceholderFragementMain.onResume(): KEIN ObjektStore aus dem Intent der Activity erhalten.");						
+				}else{
+					this.setMessageStore(objStore);
+												
+					//Nun Versuch sie in inStop() über einen Intent.getExtras zu sichern und hier wiederherzustellen
+					sMessageCurrent = objStore.getString(MyMessageHandler.RESUME_MESSAGE);
+					Log.d("FGLSTATE", "onResume(): Wert per intent (aus MessageStore) sMessageCurrent = " + sMessageCurrent);			
+						
+					if(!StringZZZ.isEmptyNull(sMessageCurrent)&& !StringZZZ.isBlank(sMessageCurrent) & !StringZZZ.isWhitespace(sMessageCurrent)){
+						//DAS FUNKTIONIERT GGFS. AUCH NICHT!!!
+						EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
+						editText.setText(sMessageCurrent + MyMessageHandler.MESSAGE_ADDITION_INTENT);
+					}else{
+						Log.d("FGLSTATE", "onResume(): Wert per intent (aus MessageStore) ist leer oder NULL.");			
+						
+						EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
+						editText.setText("");
+					}
+				}
+			}
+		}
+		
+		/* (non-Javadoc)
+		 * @see android.app.Activity#onActivityResult(int, int, android.content.Intent)
+		 * 27.07.2016 09:09:40 Fritz Lindhauer
+		 */
+		@SuppressWarnings("unchecked")
+		public void onActivityResult(int requestCode, int resultCode, Intent data) {
+			Log.d("FGLSTATE", "onActivityResult(): START mit requestCode='" + requestCode + "' | resultCode='"+resultCode+"'");
+		    super.onActivityResult(requestCode, resultCode, data);	    
+		    if (requestCode == 1) {
+		    	//20161203: Hole den Wert aus dem Intent über einen Extra DataStore und nicht mehr direkt aus dem intent.
+		    	//	data.getBundleExtra(name)
+		    	//	String stredittext=data.getStringExtra(MyMessageHandler.EXTRA_MESSAGE);
+		    	
+		    	// Get the Message from the StoreObject, stored in the intent.
+				MyMessageStoreFGL<T> objStore = (MyMessageStoreFGL<T>) data.getSerializableExtra(MyMessageHandler.EXTRA_STORE);
+				if(objStore==null){
+					Log.d("FGLTEST", "Methode sDisplayActivity.onActivityResult(..) - StoreObject IS NULL.");
+				}else{
+					Log.d("FGLTEST", "Methode sDisplayActivity.onActivityResult(..) - StoreObject FOUND.");
+					this.setMessageStore(objStore);
+					
+					String sMessage = this.getMessageStore().getString(MyMessageHandler.EXTRA_MESSAGE);
+					if(resultCode == RESULT_OK){					
+						Log.d("FGLTEST", "Methode sDisplayActivity.onActivityResult(..) - String from StoreObject = '"+sMessage + "'");
+											
+						this.setMessageCurrent(sMessage);
+					 }else{	        	
+			        	 Log.d("FGLSTATE", "onActivityResult(): result nicht OK. message  empfangen = " + sMessage);
+			         }
+				}				        	        
+		    }
+		} 
+		
+		
+		/**Starte eine Activity mit einer WebView. Dabei werfe den eingegebenen Text als Suchstring in die URL.
+		 * @param view
+		 * 13.10.2016 10:17:34 Fritz Lindhauer
+		 */
+		public void sendMessageToSearchWeb(View view){
+			//Start an intent
+					Intent intent = new Intent(getActivity(), DisplayWebviewActivityForSearch.class);
+					EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
+					String message = editText.getText().toString();
+					
+					//Besser als das Standard String.replace und Pattern zu verwenden ist hier die JAZKernel-Hilfsklasse		
+					message = MyMessageHandler.createNormedMessage(message);								
+					Log.d("FGLSTATE", "searchWeb(): message nach der Normierung = " + message);
+					
+					//Speichere die message in eine lokale Variable. Grund: So kann man sie dann wegsichern wenn sich der State des Ger�ts �ndert.
+					this.setMessageCurrent(message);
+							
+					intent.putExtra(MyMessageHandler.EXTRA_MESSAGE, message);
+					startActivity(intent);			
+		}
+		
+		
+		
+		/** Called when the user clicks the Send button */
+		public void sendMessage(View view) {
+		    //Start an intent
+			Intent intent = new Intent(getActivity(), DisplayMessageActivity.class);
+			EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
+			String message = editText.getText().toString();
+			
+			//Besser als das Standard String.replace und Pattern zu verwenden ist hier die JAZKernel-Hilfsklasse
+			message = MyMessageHandler.createNormedMessage(message);		
+			Log.d("FGLSTATE", "sendessage(): message nach der Normierung = " + message);
+			
+			//Speichere die message in eine lokale Variable. Grund: So kann man sie dann wegsichern wenn sich der State des Ger�ts �ndert.
+			this.setMessageCurrent(message);
+					
+			//-----------------------------
+			//Mache eine Hilfsklasse, für das Wegsichern und auch wieder Zurückholen von den Intent-Informationen zwischen den Activities.
+			MyMessageStoreFGL<T> objStore = this.getMessageStore();
+				
+				//Fülle den Store mit dem Eintrag
+			objStore.put(MyMessageHandler.EXTRA_MESSAGE, message); //IDEE: das sollte der Wert der UI-Komponente sein, also R.id.edit_message
+			
+				//Übergib den Store als ganzes an den Intent
+			intent.putExtra(MyMessageHandler.EXTRA_STORE, objStore);//objStore muss serializable sein
+			//------------------------------
+			startActivity(intent);
+		}
+		
+		
+		/** Called when the user clicks the SendForResult button */
+		public void sendMessageForResult(View view) {
+		    //Start an intent
+			Intent intent = new Intent(getActivity(), DisplayMessageActivityForResult.class);
+			EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
+			String message = editText.getText().toString();
+			
+			//Besser als das Standard String.replace und Pattern zu verwenden ist hier die JAZKernel-Hilfsklasse		
+			message = MyMessageHandler.createNormedMessage(message);				
+			Log.d("FGLSTATE", "sendessageForResult(): message nach der Normierung = " + message);
+			
+			//Speichere die message in eine lokale Variable. Grund: So kann man sie dann wegsichern wenn sich der State des Geräts ändert.
+			this.setMessageCurrent(message);
+			
+			//-----------------------------
+			//Mache eine Hilfsklasse, für das Wegsichern und auch wieder Zurückholen von den Intent-Informationen zwischen den Activities.
+			MyMessageStoreFGL<T> objStore = this.getMessageStore();
+				
+				//Fülle den Store mit dem Eintrag
+			objStore.put(MyMessageHandler.EXTRA_MESSAGE, message); //IDEE: das sollte der Wert der UI-Komponente sein, also R.id.edit_message
+			
+				//Übergib den Store als ganzes an den Intent
+			intent.putExtra(MyMessageHandler.EXTRA_STORE, objStore);//objStore muss serializable sein
+			//------------------------------
+			
+			//FGL 20161203: Schalte diesen direkten Weg ab...
+			//intent.putExtra(MyMessageHandler.EXTRA_MESSAGE, message);
+			startActivityForResult(intent,1);
+		}
+		
+	}//END PlaceholderFragmentmain
+		
+	//#########################################################################
 	/**
 	 * A placeholder fragment containing a simple view.
 	 */
-	public static class PlaceholderFragmentList extends Fragment {
+	public static class PlaceholderFragmentList<T> extends Fragment {		
+		private MyMessageStoreFGL<T> objStore=null;		
+		private void setMessageStore(MyMessageStoreFGL<T> objStore){
+			this.objStore = objStore;
+		}
+		private MyMessageStoreFGL<T> getMessageStore(){
+			if(this.objStore==null){
+				this.objStore = new MyMessageStoreFGL<T>();
+			}
+			return this.objStore;
+		}
+		
 		private ArrayList<String> listaSearchString = new ArrayList<String>();//Für die Liste der Suchwerte, sie wird gefüllt. Wenn sie leer ist, wird ein spezieller "Leereintrag" angezeigt.
 		private ArrayList<String>getSearchElements(){
 			return listaSearchString;
@@ -685,6 +792,7 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 					Log.d("FGLSTATE", "PlaceholderFragmentList.onCreateView() mit Bundle 'savedInstanceState' gefunden.");
 					
 					//Stelle die Liste mit Suchelementen wieder her
+					//TODO FGL 20161203: Hohle die Werte aus dem ObjectMessageStore.
 					
 					//GRUND: SERIALIZIERUNG geht nur mit expliziter Klasse, ggf. reicht auch hier ein "dreckiger" Typecast		
 					ArrayList<String> listaTemp = (ArrayList<String>) savedInstanceState.get(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT);
@@ -694,7 +802,7 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 				
 			
 				//Zeige die Liste mit Suchelementen an.			
-				if(this.listaSearchString.isEmpty()){
+				if(this.getSearchElements().isEmpty()){
 					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() ArrayList für Elemente ist leer.");
 					//Merke: Im onStart wird ein Element erstellt, dass angezeigt werden soll, wenn die Liste leer ist.
 				}else{
@@ -704,7 +812,7 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 					//1. Versuch: Cast Fehler. man man nicht Object[] in String[] casten  ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, (String[])listaSearchString.toArray());//Haken werden hinter den Elementen angezeigt.
 					//2. Versuch: NullPointer Exception: Attempt to get length of null Array.
 					//The toArray() method without passing any argument returns Object[]. So you have to pass an array as an argument, which will be filled with the data from the list, and returned. You can pass an empty array as well, but you can also pass an array with the desired size.
-					String[] saTemp = listaSearchString.toArray(new String[listaSearchString.size()]);
+					String[] saTemp = this.getSearchElements().toArray(new String[listaSearchString.size()]);
 																
 					Log.d("FGLSTATE", "PlaceholderFragementList.onCreateView() saTemp erzeugt.");
 					ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, saTemp);//Haken werden hinter den Elementen angezeigt.
@@ -749,6 +857,7 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 					
 					
 					//GRUND: SERIALIZIERUNG geht nur mit expliziter Klasse, ggf. reicht auch hier ein "dreckiger" Typecast
+					//TODO FGL 20161203: Ändere das auf den MessageObjectStore ab
 					ArrayList<String> listaTemp = this.getSearchElements();
 					Log.d("FGLSTATE", "PlaceholderFragmentList.onSaveInstanceState(): Es sind '" + listaTemp.size() + "' Elemente in der Liste.");
 					outState.putSerializable(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT, listaTemp); //liste darf nicht das Interface sein, sondern muss explizit die Klasse ArrayList sein.
@@ -766,7 +875,7 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 				Log.d("FGLSTATE", "PlaceholderFragmentList.onActivityCreated() mit Bundle '" + listaTemp.size() + "' ArrayList SuchListen-Elementen.");
 				this.setSearchElements(listaTemp);			
 				
-				if(this.listaSearchString.isEmpty()){
+				if(this.getSearchElements().isEmpty()){
 					Log.d("FGLSTATE", "PlaceholderFragementList.onActivityCreated() ArrayList für Elemente ist leer.");
 					//Merke: Im onStart wird ein Element erstellt, dass angezeigt werden soll, wenn die Liste leer ist.
 				}else{
@@ -784,7 +893,7 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 						//1. Versuch: Cast Fehler. man man nicht Object[] in String[] casten  ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, (String[])listaSearchString.toArray());//Haken werden hinter den Elementen angezeigt.
 						//2. Versuch: NullPointer Exception: Attempt to get length of null Array.
 						//The toArray() method without passing any argument returns Object[]. So you have to pass an array as an argument, which will be filled with the data from the list, and returned. You can pass an empty array as well, but you can also pass an array with the desired size.
-						String[] saTemp = listaSearchString.toArray(new String[listaSearchString.size()]);
+						String[] saTemp = this.getSearchElements().toArray(new String[this.getSearchElements().size()]);
 																	
 						Log.d("FGLSTATE", "PlaceholderFragementList.onActivityCreated() saTemp erzeugt.");
 						ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, saTemp);//Haken werden hinter den Elementen angezeigt.
@@ -797,6 +906,30 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 			}else{
 				Log.d("FGLSTATE", "PlaceholderFragementList.onActivityCreated() savedInstanceState==null.");
 			}//end if(savedInstanceState!=null){							
+		}
+		
+		public void onResume(){
+			super.onResume();
+			Log.d("FGLSTATE", "PlaceholderFragementList.onResume(): START");
+			
+			//Versuche die gespeicherten Liste wiederherszustellen.
+			//Merke: Beim einfachen Wechseln zurück wird dann nicht onCreate() aufgerufen, sondern onResume(), 
+			//       darum gehört der Code hierher, ABER: savedInstanceState ist hier nicht vorhanden.
+			
+			//Damit das funktioniert muss onRestoreInstanceState() ausgeführt werden und es muss die lokale Property wieder gefüllt worden sein.
+			MyMessageStoreFGL<T> objStore = (MyMessageStoreFGL<T>) getActivity().getIntent().getSerializableExtra(MyMessageHandler.EXTRA_STORE);
+			if(objStore!=null){
+				this.setMessageStore(objStore);
+												
+				//Nun Versuch sie in inStop() über einen Intent.getExtras zu sichern und hier wiederherzustellen
+				ArrayList<String> listaCurrent = (ArrayList<String>) objStore.get(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT);
+				if(listaCurrent!=null){
+					Log.d("FGLSTATE", "PlaceholderFragementList.onResume(): Wert per intent (aus MessageStore) ArrrayList mit = '" + listaCurrent.size() + "' Elementen.");
+					this.setSearchElements(listaCurrent);
+				}else{
+					Log.d("FGLSTATE", "PlaceholderFragementList.onResume(): KEIN Wert per intent (aus MessageStore) ArrrayList.");
+				}							
+			}	
 		}
 		
 				
@@ -837,12 +970,8 @@ public class MainActivity extends  AppCompatActivity{ // ActionBarActivity { //M
 		private void initialisiereListTestElemente(){
 			String[] saTest = {"eins","zwei","drei","vier","fünf"};
 			for(int icount=0; icount <= saTest.length-1; icount++){
-				this.listaSearchString.add(saTest[icount]);
-			}
-			
-		}
-		
-		
+				this.getSearchElements().add(saTest[icount]);
+			}			
+		}				
 	}
-
 }

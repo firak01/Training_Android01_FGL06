@@ -50,6 +50,7 @@ public class DisplayMessageActivityForResult<T> extends AppCompatActivity {
 	}
 	
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -66,7 +67,7 @@ public class DisplayMessageActivityForResult<T> extends AppCompatActivity {
 				//String message = intent.getStringExtra(MyMessageHandler.EXTRA_MESSAGE);
 											
 				// Get the Message from the StoreObject, stored in the intent.
-				MyMessageStoreFGL objStore = (MyMessageStoreFGL) intent.getSerializableExtra(MyMessageHandler.EXTRA_STORE);
+				MyMessageStoreFGL<T> objStore = (MyMessageStoreFGL<T>) intent.getSerializableExtra(MyMessageHandler.EXTRA_STORE);
 				if(objStore==null){
 					Log.d("FGLTEST", "Methode sDisplayActivity.onCreate(..) - StoreObject IS NULL.");
 				}else{
@@ -150,6 +151,7 @@ public class DisplayMessageActivityForResult<T> extends AppCompatActivity {
 	
 	
 	//FGL: Training/Adding the Action Bar / Adding Action Buttons
+		@SuppressWarnings("unused")
 		@Override
 		public boolean onOptionsItemSelected(MenuItem item) {
 			Log.d("FGLSTATE", "DisplayMessageActivityForResult.onOptionsItemSelected()");
@@ -174,36 +176,37 @@ public class DisplayMessageActivityForResult<T> extends AppCompatActivity {
 			//
 			if(id==16908332){
 				//If Abfrage, weil in der Switch-Case Anweisung der Vergleich nicht zu klappen scheint.
-				Log.d("FGLSTATE", "DisplayMessageActivityForResult.DisplayMessageActivityForResult.onOptionsItemSelected() für speziell definierte actionBarId gefunden.");
-				
+				Log.d("FGLSTATE", "DisplayMessageActivityForResult.onOptionsItemSelected() für speziell definierte actionBarId gefunden.");
 				
 				//TODO GOON FGL 20161202: Packe den neuen Wert in das StoreObjekt zurück.
 				//                                        Packe Testweise die Dummy-ArrayListe in das StoreObjekt.
 				//                                        Packe das StoreObjekt in das Bundle
-				//                                        Hole in der MainActivity die Werte zurück.....
+				//                                        Hole in der MainActivity die Werte zurück.....				
+				MyMessageStoreFGL<T> objStore = this.getMessageStore();
+				//! Wenn das gleiche zurückgegeben wir, was reinkommt, braucht man das nicht zu holen und zurückzuschreiben.
+				Log.d("FGLSTATE", "DisplayMessageActivityForResult.onOptionsItemSelected() - MessageCurrent ='"+ this.getMessageCurrent()+"'.");				
+				objStore.put(MyMessageHandler.RESUME_MESSAGE, this.getMessageCurrent());
+						
+				//TODO GOON: Packe testweise eine ArrayListe hier herein, versuche diese dann entgegenzunehmen.
+	            //                    Das Ziel ist es so die ArrayListe im ListenFragment auch zu füllen.
+				 ArrayList<String>listaTemp02=new ArrayList<String>();
+		         listaTemp02.add("TEST02");
+		         objStore.put(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT, listaTemp02);
 				
 				//Versuch X: Gib an die aufgerufene Funktion den Wert zurück
 	    		Bundle bundle = new Bundle();
-	            bundle.putString(MyMessageHandler.RESUME_MESSAGE_BUNDLE, this.getMessageCurrent());
-	            //natürlich nicht in den Intent Packen, der dieser Activity beim Start mitgegeben worden ist getIntent().putExtras(bundle);
-	            
-	            //TODO GOON: Packe testweise eine ArrayListe hier herein, versuche diese dann entgegenzunehmen.
-	            //                    Das Ziel ist es so die ArrayListe im ListenFragment auch zu füllen.
-	            //Versuch3b: Arraylist (für Suchelementliste)
-	            Bundle bundle03 = new Bundle();
-	            ArrayList<String>listaTemp02=new ArrayList<String>();
-	            listaTemp02.add("TEST02");
-	            bundle03.putStringArrayList(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT, listaTemp02);	               			         
-	            
+	    		bundle.putSerializable(MyMessageHandler.EXTRA_STORE, objStore);	           
+	           	    			    			            	            
 	            //Start an intent mit dem Ziel diesen in der onResume Methpde entgegenzunehmen.
+	            //natürlich nicht in den Intent Packen, der dieser Activity beim Start mitgegeben worden ist 
+	            //sondern mache einen neuen... getIntent().putExtras(bundle);
+	            
 	    		Intent intent = new Intent(this, MainActivity.class);	    		
 	    		intent.putExtras(bundle);
-	    		intent.putExtras(bundle03);
-	      		startActivity(intent); //Merke: Nachteil ist, das jeder Activity-Start quasi in eine History kommt. 
+	    		startActivity(intent); //Merke: Nachteil ist, das jeder Activity-Start quasi in eine History kommt. 
 	      		                       //       Das bedeutet, dass der Zurück-Button des Geräts erst einmal alle Activities aus der Historie durchläuft,
 	      		                       //       wenn man ihn in der Hauptmaske benötigt.
-	    		
-				
+	    						
 			}else{
 				Log.d("FGLSTATE", "DisplayMessageActivityForResult.onOptionsItemSelected() für speziell definierte actionBarId NICHT gefunden.");
 				

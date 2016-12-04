@@ -18,8 +18,19 @@ import android.widget.TextView;
 //public class DisplayMessageActivity extends ActionBarActivity {
 //Lösung:
 //AppCompatActivity wird wohl über die SupportBibiothek (V7) eingebunden.
-public class DisplayMessageActivity extends AppCompatActivity {
+public class DisplayMessageActivity<T> extends AppCompatActivity {
+	private MyMessageStoreFGL<T> objStore=null;
 	private String sMessageCurrent;
+	
+	private void setMessageStore(MyMessageStoreFGL<T> objStore){
+		this.objStore = objStore;
+	}
+	private MyMessageStoreFGL<T> getMessageStore(){
+		if(this.objStore==null){
+			this.objStore = new MyMessageStoreFGL<T>();
+		}
+		return this.objStore;
+	}
 	
 	/**
 	 * @param message
@@ -28,11 +39,14 @@ public class DisplayMessageActivity extends AppCompatActivity {
 	 */
 	private void setMessageCurrent(String message) {
 		this.sMessageCurrent= message;
-		Log.d("FGLSTATE", this.getClass().getSimpleName()+". setMessageCurrent() für '" + message + "'");
+		Log.d("FGLSTATE", this.getClass().getSimpleName()+".setMessageCurrent() für '" + message + "'");
 		
 	}
 	private String getMessageCurrent(){
-		Log.d("FGLSTATE", this.getClass().getSimpleName()+". getMessageCurrent() für '" + this.sMessageCurrent + "'");
+		Log.d("FGLSTATE", this.getClass().getSimpleName()+".getMessageCurrent() für '" + this.sMessageCurrent + "'");
+		if(this.sMessageCurrent==null){
+			this.sMessageCurrent=new String("");
+		}
 		return this.sMessageCurrent;		
 	}
 	
@@ -43,14 +57,23 @@ public class DisplayMessageActivity extends AppCompatActivity {
 		//++++++++++++++++++++++++++++++++++++++++++++++
 		// Get the message from the intent
 		Intent intent = getIntent();
-		String message = intent.getStringExtra(MyMessageHandler.EXTRA_MESSAGE);
-		this.setMessageCurrent(message);
+
+		MyMessageStoreFGL<T> objStore = (MyMessageStoreFGL<T>) intent.getSerializableExtra(MyMessageHandler.EXTRA_STORE);
+		if(objStore==null){
+			Log.d("FGLSTATE", "DisplayMessageActivity.onCreate(..) - Store ist NULL.");
+		}else{
+			this.setMessageStore(objStore);
+			String sMessage = objStore.getString(MyMessageHandler.EXTRA_MESSAGE);	
+			Log.d("FGLSTATE", "DisplayMessageActivity.onCreate(..) - Message aus dem Store = '" + sMessage +"'.");
+			this.setMessageCurrent(sMessage);
+		
+		
 		//++++++++++++++++++++++++++++++++++++++++++++++
 		
 		//FGL: TODO - Das mit dem Ändern der Farbe funktioniert nicht
 		int iColor;
 		String alarmMessagePrefix = "Alarm";
-		if(message.startsWith(alarmMessagePrefix)){
+		if(this.getMessageCurrent().startsWith(alarmMessagePrefix)){
 			iColor = Color.RED;
 		}else{
 			iColor = Color.GRAY;
@@ -88,7 +111,7 @@ public class DisplayMessageActivity extends AppCompatActivity {
 		// Create the text view
 	    TextView textView = new TextView(this);
 	    textView.setTextSize(40);
-	    textView.setText(message);
+	    textView.setText(this.getMessageCurrent());
 
 	    // Set the text view as the activity layout
 	    setContentView(textView);
@@ -102,6 +125,7 @@ public class DisplayMessageActivity extends AppCompatActivity {
 //			getSupportFragmentManager().beginTransaction()
 //					.add(R.id.container, new PlaceholderFragment()).commit();
 		}
+		}//objStore!=null
 	}
 
 	//Wird für diese App nicht benötigt
@@ -143,24 +167,24 @@ public class DisplayMessageActivity extends AppCompatActivity {
 		//   Dann bleibt der Wert als Variable in der Activity vorhanden.
 		//b) Wenn über den Zurück-Button in der ActionBar gearbeitet wird, sind die Werte in onResume() nur entgegenzunehmen,
 		//   durch einen Intent, in dem man den Wert speichert.
-		//c) IDEE: Versuche aus der Hauptaktivit�t mal die DisplayMessageActivity02 aufzurufen mit
-		//         startActivityForResult(). Vielleicht geht es dann einfacher.
-		//
 		if(id==16908332){
+			Intent intent = new Intent(this, MainActivity.class);
+			
 			//If Abfrage, weil in der Switch-Case Anweisung der Vergleich nicht zu klappen scheint.
 			Log.d("FGLSTATE", "onOptionsItemSelected() für speziell definierte actionBarId gefunden.");
 			
-			//Versuch X: Gib an die aufgerufene Funktion den Wert zur�ck
-    		Bundle bundle = new Bundle();
-            bundle.putString(MyMessageHandler.RESUME_MESSAGE_BUNDLE, this.getMessageCurrent());
-            //nat�rlich nicht in den Intent Packen, der dieser Activity beim Start mitgegeben worden ist getIntent().putExtras(bundle);
-            
-            //Start an intent mit dem Ziel diesen in der onResume Methpde entgegenzunehmen.
-    		Intent intent = new Intent(this, MainActivity.class);	    		
-    		intent.putExtras(bundle);
+			//Verwende den Message Store zur Rückgabe von Werten
+			MyMessageStoreFGL<T> objStore = (MyMessageStoreFGL<T>) this.getMessageStore();//getIntent().getSerializableExtra(MyMessageHandler.EXTRA_STORE);
+			if(objStore!=null){														
+				sMessageCurrent = objStore.getString(MyMessageHandler.RESUME_MESSAGE);
+				Log.d("FGLSTATE", "onResume(): Wert per intent (aus MessageStore) sMessageCurrent = " + sMessageCurrent);			
+			
+			    intent.putExtra(MyMessageHandler.EXTRA_STORE, objStore);						
+			}
+			
       		startActivity(intent); //Merke: Nachteil ist, das jeder Activity-Start quasi in eine History kommt. 
-      		                       //       Das bedeutet, dass der Zur�ck-Button des Ger�ts erst einmal alle Activities aus der Historie durchl�uft,
-      		                       //       wenn man ihn in der Hauptmaske bet�tigt.
+      		                       //       Das bedeutet, dass der Zurück-Button des Geräts erst einmal alle Activities aus der Historie durchl�uft,
+      		                       //       wenn man ihn in der Hauptmaske betätigt.
     		
 			
 		}else{
@@ -204,26 +228,5 @@ public class DisplayMessageActivity extends AppCompatActivity {
 	private void openSearch() {
 		// TODO Auto-generated method stub
 		
-	}
-
-	//Folgendes wird nicht ben�tigt:
-	/**
-	 * A placeholder fragment containing a simple view.
-	 */
-//	public static class PlaceholderFragment extends Fragment {
-//
-//		public PlaceholderFragment() {
-//		}
-//
-//		@Override
-//		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-//				Bundle savedInstanceState) {
-//			View rootView = inflater.inflate(R.layout.fragment_display_message,
-//					container, false);
-//			return rootView;
-//		}
-//	}
-
-	
-	
+	}	
 }

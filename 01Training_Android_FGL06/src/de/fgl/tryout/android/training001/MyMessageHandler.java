@@ -14,7 +14,8 @@ public class MyMessageHandler {
 	
 	public final static String EXTRA_MESSAGE = "de.fgl.tryout.android.training001.MainAcitvity.MESSAGE";
 	public final static String RESUME_MESSAGE = "de.fgl.tryout.android.training001.MainAcitvity.RESUMEMESSAGE";
-	public final static String RESUME_MESSAGE_BUNDLE = "de.fgl.tryout.android.training001.MainAcitvity.RESUMEMESSAGEBUNDLE";
+	//Das ist dann beim Verwenden des MessageStore nicht mehr notwendig.
+	//Alles wird nämlich auf die gleiche Messageposition bezogen public final static String RESUME_MESSAGE_BUNDLE = "de.fgl.tryout.android.training001.MainAcitvity.RESUMEMESSAGEBUNDLE";
 	
 	
 	public final static String KEY_MESSAGE_CURRENT="currentMessage";

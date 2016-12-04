@@ -4,6 +4,7 @@
 package de.fgl.tryout.android.training001;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -48,9 +49,18 @@ public class MyMessageStoreFGL<T> extends ObjectZZZ implements Serializable
 		this.setHashMapAll(objhm);
 	}
 	
+	@SuppressWarnings("unchecked")
+	public void put(String sKey, String sValue){
+		this.getHashMapAll().put(sKey, (T) sValue);		
+	}
 	public void put(String sKey, T sValue){
 		this.getHashMapAll().put(sKey, sValue);		
 	}
+	@SuppressWarnings("unchecked")
+	public void put(String sKey, ArrayList<String> listaTemp) {
+		this.getHashMapAll().put(sKey, (T) listaTemp);
+	}
+	
 	public T get(String sKey){
 		return this.getHashMapAll().get(sKey);
 	}
@@ -75,6 +85,7 @@ public class MyMessageStoreFGL<T> extends ObjectZZZ implements Serializable
 		}		
 		return hmReturn;
 	}
+	
 	
 	
 	
