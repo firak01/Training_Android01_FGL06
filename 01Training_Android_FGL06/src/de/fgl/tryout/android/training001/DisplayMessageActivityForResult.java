@@ -20,25 +20,19 @@ import android.widget.TextView;
 //Damit eine Menüleiste angezeigt wird. Aber ActionBarActivty ist deprecated
 //Lösung:
 //AppCompatActivity wird über die SupportBibiothek (V7) eingebunden.
-public class DisplayMessageActivityForResult<T> extends AppCompatActivity {	
-	private MyMessageStoreFGL<T> objStore=null;
+public class DisplayMessageActivityForResult<T> extends AppCompatActivity {		
 	private String sMessageCurrent=null;
-	
-	/**
-	 * @param message
-	 * 15.07.2016 08:26:09 Fritz Lindhauer
-	 */
 	private void setMessageCurrent(String message) {
 		this.sMessageCurrent= message;
-		Log.d("FGLSTATE", this.getClass().getSimpleName()+". setMessageCurrent() für '" + message + "'");
-		
+		Log.d("FGLSTATE", this.getClass().getSimpleName()+". setMessageCurrent() für '" + message + "'");	
 	}
 	private String getMessageCurrent(){		
 		if(this.sMessageCurrent==null) this.sMessageCurrent=new String("");
-		
+		Log.d("FGLSTATE", this.getClass().getSimpleName()+". getMessageCurrent() für '" + this.sMessageCurrent + "'");
 		return this.sMessageCurrent;		
 	}
 	
+	private MyMessageStoreFGL<T> objStore=null;
 	private void setMessageStore(MyMessageStoreFGL<T> objStore){
 		this.objStore = objStore;
 	}
@@ -69,12 +63,12 @@ public class DisplayMessageActivityForResult<T> extends AppCompatActivity {
 				// Get the Message from the StoreObject, stored in the intent.
 				MyMessageStoreFGL<T> objStore = (MyMessageStoreFGL<T>) intent.getSerializableExtra(MyMessageHandler.EXTRA_STORE);
 				if(objStore==null){
-					Log.d("FGLTEST", "Methode sDisplayActivity.onCreate(..) - StoreObject IS NULL.");
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreate(..) - StoreObject IS NULL.");
 				}else{
-					Log.d("FGLTEST", "Methode sDisplayActivity.onCreate(..) - StoreObject FOUND.");
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreate(..) - StoreObject FOUND.");
 					this.setMessageStore(objStore);
-					String sMessage = this.getMessageStore().getString(MyMessageHandler.EXTRA_MESSAGE);
-					Log.d("FGLTEST", "Methode sDisplayActivity.onCreate(..) - String from StoreObject = '"+sMessage + "'");
+					String sMessage = this.getMessageStore().getString(MyMessageHandler.RESUME_MESSAGE);
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreate(..) - String from StoreObject = '"+sMessage + "'");
 										
 					this.setMessageCurrent(sMessage);
 				}
@@ -154,7 +148,7 @@ public class DisplayMessageActivityForResult<T> extends AppCompatActivity {
 		@SuppressWarnings("unused")
 		@Override
 		public boolean onOptionsItemSelected(MenuItem item) {
-			Log.d("FGLSTATE", "DisplayMessageActivityForResult.onOptionsItemSelected()");
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onOptionsItemSelected()");
 			// Handle action bar item clicks here. The action bar will
 			// automatically handle clicks on the Home/Up button, so long
 			// as you specify a parent activity in AndroidManifest.xml.
@@ -176,15 +170,18 @@ public class DisplayMessageActivityForResult<T> extends AppCompatActivity {
 			//
 			if(id==16908332){
 				//If Abfrage, weil in der Switch-Case Anweisung der Vergleich nicht zu klappen scheint.
-				Log.d("FGLSTATE", "DisplayMessageActivityForResult.onOptionsItemSelected() für speziell definierte actionBarId gefunden.");
+				Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() für speziell definierte actionBarId gefunden.");
 				
-				//TODO GOON FGL 20161202: Packe den neuen Wert in das StoreObjekt zurück.
-				//                                        Packe Testweise die Dummy-ArrayListe in das StoreObjekt.
-				//                                        Packe das StoreObjekt in das Bundle
-				//                                        Hole in der MainActivity die Werte zurück.....				
+				//Packe den neuen Wert in das StoreObjekt zurück.
+				//TODO GOON 20161205: Packe Testweise die Dummy-ArrayListe in das StoreObjekt.
+				//Packe das StoreObjekt in das Bundle
+				//Hole in der MainActivity die Werte zurück.....				
 				MyMessageStoreFGL<T> objStore = this.getMessageStore();
+				if(objStore==null){
+					
+				}else{
 				//! Wenn das gleiche zurückgegeben wir, was reinkommt, braucht man das nicht zu holen und zurückzuschreiben.
-				Log.d("FGLSTATE", "DisplayMessageActivityForResult.onOptionsItemSelected() - MessageCurrent ='"+ this.getMessageCurrent()+"'.");				
+				Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() - MessageCurrent ='"+ this.getMessageCurrent()+"'.");				
 				objStore.put(MyMessageHandler.RESUME_MESSAGE, this.getMessageCurrent());
 						
 				//TODO GOON: Packe testweise eine ArrayListe hier herein, versuche diese dann entgegenzunehmen.
@@ -206,9 +203,9 @@ public class DisplayMessageActivityForResult<T> extends AppCompatActivity {
 	    		startActivity(intent); //Merke: Nachteil ist, das jeder Activity-Start quasi in eine History kommt. 
 	      		                       //       Das bedeutet, dass der Zurück-Button des Geräts erst einmal alle Activities aus der Historie durchläuft,
 	      		                       //       wenn man ihn in der Hauptmaske benötigt.
-	    						
+				}//objStore!=null
 			}else{
-				Log.d("FGLSTATE", "DisplayMessageActivityForResult.onOptionsItemSelected() für speziell definierte actionBarId NICHT gefunden.");
+				Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() für speziell definierte actionBarId NICHT gefunden.");
 				
 				// Handle presses on the action bar items
 			    switch (id) {
@@ -222,16 +219,16 @@ public class DisplayMessageActivityForResult<T> extends AppCompatActivity {
 			            openSettings();
 			            return true;
 			        case R.id.home:
-			        	Log.d("FGLSTATE", "DisplayMessageActivityForResult.onOptionsItemSelected() für HOME item.id= '" + id + "'");
+			        	Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() für HOME item.id= '" + id + "'");
 			        case R.id.homeAsUp:
-			        	Log.d("FGLSTATE", "DisplayMessageActivityForResult.onOptionsItemSelected() für HOMEASUP item.id= '" + id + "'");
+			        	Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() für HOMEASUP item.id= '" + id + "'");
 			        case R.id.up:
-			        	Log.d("FGLSTATE", "DisplayMessageActivityForResult.onOptionsItemSelected() für HUP item.id= '" + id + "'");
+			        	Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() für HUP item.id= '" + id + "'");
 			        case 16908332:
 			        	//DAS WIRD AUS iregendeinem Grund nicht ausgeführt. Darum in den if-Abfrage vorneweg verlagert.
-			        	Log.d("FGLSTATE", "DisplayMessageActivityForResult.onOptionsItemSelected() für speziell definierte actionBarId ohne in R-Klasse vohranden zu sein: item.id= '" + id + "'");	        		        
+			        	Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() für speziell definierte actionBarId ohne in R-Klasse vohranden zu sein: item.id= '" + id + "'");	        		        
 			        default:
-			        	Log.d("FGLSTATE", "DisplayMessageActivityForResult.onOptionsItemSelected() für default item.id= '" + id + "'");
+			        	Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() für default item.id= '" + id + "'");
 			            return super.onOptionsItemSelected(item);
 			    }
 			}
@@ -272,13 +269,15 @@ public class DisplayMessageActivityForResult<T> extends AppCompatActivity {
 //	        mParent.finishFromChild(this);
 //	    }
 		
-		Log.d("FGLSTATE", this.getClass().getSimpleName()+". im finish()");
 		
-		String message = this.getMessageCurrent() + " (als Result)";
-		Intent data = new Intent();
-		data.putExtra(MyMessageHandler.EXTRA_MESSAGE, message);
-		setResult(Activity.RESULT_OK, data);
-		
+		//FGL 20161206: IST DAS WICHTIG ???? Es wird doch nun alles im objectStore gemacht.
+//		Log.d("FGLSTATE", this.getClass().getSimpleName()+". im finish()");
+//		
+//		String message = this.getMessageCurrent() + " (als Result)";
+//		Intent data = new Intent();
+//		data.putExtra(MyMessageHandler.EXTRA_MESSAGE, message);
+//		setResult(Activity.RESULT_OK, data);
+//		
 		//Wichtig: Erst den Intent bauen und dann erst finish() der Elternklasse aufrufen.
 		super.finish();
 	}

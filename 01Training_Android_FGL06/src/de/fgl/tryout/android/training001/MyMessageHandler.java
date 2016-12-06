@@ -10,9 +10,9 @@ import basic.zBasic.util.datatype.string.StringZZZ;
  *
  */
 public class MyMessageHandler {
-	public final static String EXTRA_STORE = "de.fgl.tryout.android.training001.MyMessageStoreFGL"; //Darunter sollen dann alle anderen Werte (ereichbar über die anderen Stringkonstanten) abgelegt sein.
+	public final static String EXTRA_STORE = "de.fgl.tryout.android.training001.MyMessageStoreFGL"; //Darunter sollen dann alle anderen Werte (ereichbar über die anderen Stringkonstanten) abgelegt sein.	
+	//public final static String EXTRA_MESSAGE = "de.fgl.tryout.android.training001.MainAcitvity.MESSAGE"; //Konvention: Das wäre eine Message auf oberster Ebene und nicht im ObjectMessageStore.
 	
-	public final static String EXTRA_MESSAGE = "de.fgl.tryout.android.training001.MainAcitvity.MESSAGE";
 	public final static String RESUME_MESSAGE = "de.fgl.tryout.android.training001.MainAcitvity.RESUMEMESSAGE";
 	//Das ist dann beim Verwenden des MessageStore nicht mehr notwendig.
 	//Alles wird nämlich auf die gleiche Messageposition bezogen public final static String RESUME_MESSAGE_BUNDLE = "de.fgl.tryout.android.training001.MainAcitvity.RESUMEMESSAGEBUNDLE";

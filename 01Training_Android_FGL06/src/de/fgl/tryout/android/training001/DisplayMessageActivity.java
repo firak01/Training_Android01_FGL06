@@ -19,24 +19,18 @@ import android.widget.TextView;
 //Lösung:
 //AppCompatActivity wird wohl über die SupportBibiothek (V7) eingebunden.
 public class DisplayMessageActivity<T> extends AppCompatActivity {
-	private MyMessageStoreFGL<T> objStore=null;
-	private String sMessageCurrent;
-	
-	private void setMessageStore(MyMessageStoreFGL<T> objStore){
+	private MyMessageStoreFGL<T> objStore=null;	
+	public void setMessageStore(MyMessageStoreFGL<T> objStore){
 		this.objStore = objStore;
 	}
-	private MyMessageStoreFGL<T> getMessageStore(){
+	public MyMessageStoreFGL<T> getMessageStore(){
 		if(this.objStore==null){
 			this.objStore = new MyMessageStoreFGL<T>();
 		}
 		return this.objStore;
 	}
 	
-	/**
-	 * @param message
-	 * 15.07.2016 08:26:09 Fritz Lindhauer
-	 * Test auf Änderungen
-	 */
+	private String sMessageCurrent;	
 	private void setMessageCurrent(String message) {
 		this.sMessageCurrent= message;
 		Log.d("FGLSTATE", this.getClass().getSimpleName()+".setMessageCurrent() für '" + message + "'");
@@ -54,20 +48,27 @@ public class DisplayMessageActivity<T> extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
+		if (savedInstanceState != null) {
+//			getSupportFragmentManager().beginTransaction()
+//					.add(R.id.container, new PlaceholderFragment()).commit();
+		}else{
 		//++++++++++++++++++++++++++++++++++++++++++++++
 		// Get the message from the intent
 		Intent intent = getIntent();
 
+		// Get the Message from the StoreObject, stored in the intent.
 		MyMessageStoreFGL<T> objStore = (MyMessageStoreFGL<T>) intent.getSerializableExtra(MyMessageHandler.EXTRA_STORE);
 		if(objStore==null){
-			Log.d("FGLSTATE", "DisplayMessageActivity.onCreate(..) - Store ist NULL.");
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreate(..) - StoreObject IS NULL.");
 		}else{
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreate(..) - StoreObject FOUND.");
 			this.setMessageStore(objStore);
-			String sMessage = objStore.getString(MyMessageHandler.EXTRA_MESSAGE);	
-			Log.d("FGLSTATE", "DisplayMessageActivity.onCreate(..) - Message aus dem Store = '" + sMessage +"'.");
+			String sMessage = this.getMessageStore().getString(MyMessageHandler.RESUME_MESSAGE);
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreate(..) - String from StoreObject = '"+sMessage + "'");
+								
 			this.setMessageCurrent(sMessage);
 		
-		
+			
 		//++++++++++++++++++++++++++++++++++++++++++++++
 		
 		//FGL: TODO - Das mit dem Ändern der Farbe funktioniert nicht
@@ -88,16 +89,16 @@ public class DisplayMessageActivity<T> extends AppCompatActivity {
 //			//Style den Hintergrund		
 //			actionBar.setBackgroundDrawable(new ColorDrawable(iColor)); // set your desired color
 		}else{
-			Log.d("FGLTEST", "Methode sDisplayActivity.onCreate(..) - minSdkVersion is 11 or higher.");
+			Log.d("FGLSTET",  this.getClass().getSimpleName()+".onCreate(..) - minSdkVersion is 11 or higher.");
 			
 			// If your minSdkVersion is 11 or higher, instead use:
 			android.app.ActionBar actionBar = getActionBar();
 			if(actionBar==null){
 				//TODO 20160818: Warum ist Action Bar NULL?
-				Log.d("FGLTEST", "Methode sDisplayActivity.onCreate(..) - action bar IS NULL.");
+				Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onCreate(..) - action bar IS NULL.");
 				
 			}else{
-				Log.d("FGLTEST", "Methode sDisplayActivity.onCreate(..) - action bar not null.");
+				Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onCreate(..) - action bar not null.");
 			
 				actionBar.setDisplayHomeAsUpEnabled(true);
 			
@@ -121,10 +122,7 @@ public class DisplayMessageActivity<T> extends AppCompatActivity {
 	    //mTextView = (TextView) findViewById(R.id.text_message);
 		//setContentView(R.layout.activity_display_message);
 
-		if (savedInstanceState == null) {
-//			getSupportFragmentManager().beginTransaction()
-//					.add(R.id.container, new PlaceholderFragment()).commit();
-		}
+		}//saved instance state ==null
 		}//objStore!=null
 	}
 
@@ -150,7 +148,7 @@ public class DisplayMessageActivity<T> extends AppCompatActivity {
 	//FGL: Training/Adding the Action Bar / Adding Action Buttons
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		Log.d("FGLSTATE", "onOptionsItemSelected()");
+		Log.d("FGLSTATE",  this.getClass().getSimpleName()+"onOptionsItemSelected()");
 		// Handle action bar item clicks here. The action bar will
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
@@ -171,24 +169,31 @@ public class DisplayMessageActivity<T> extends AppCompatActivity {
 			Intent intent = new Intent(this, MainActivity.class);
 			
 			//If Abfrage, weil in der Switch-Case Anweisung der Vergleich nicht zu klappen scheint.
-			Log.d("FGLSTATE", "onOptionsItemSelected() für speziell definierte actionBarId gefunden.");
+			Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() für speziell definierte actionBarId gefunden.");
 			
 			//Verwende den Message Store zur Rückgabe von Werten
 			MyMessageStoreFGL<T> objStore = (MyMessageStoreFGL<T>) this.getMessageStore();//getIntent().getSerializableExtra(MyMessageHandler.EXTRA_STORE);
 			if(objStore!=null){														
 				sMessageCurrent = objStore.getString(MyMessageHandler.RESUME_MESSAGE);
-				Log.d("FGLSTATE", "onResume(): Wert per intent (aus MessageStore) sMessageCurrent = " + sMessageCurrent);			
-			
-			    intent.putExtra(MyMessageHandler.EXTRA_STORE, objStore);						
+				Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected(): Wert per intent (aus MessageStore) sMessageCurrent = " + sMessageCurrent);			
+						   				   
+				//Versuch X: Gib an die aufgerufene Funktion den Wert zurück
+	    		Bundle bundle = new Bundle();
+	    		bundle.putSerializable(MyMessageHandler.EXTRA_STORE, objStore);	           
+	           	    			    			            	            
+	            //Start an intent mit dem Ziel diesen in der onResume Methpde entgegenzunehmen.
+	            //natürlich nicht in den Intent Packen, der dieser Activity beim Start mitgegeben worden ist 
+	            //sondern mache einen neuen... getIntent().putExtras(bundle);	    		
+	    		intent.putExtras(bundle);
 			}
 			
       		startActivity(intent); //Merke: Nachteil ist, das jeder Activity-Start quasi in eine History kommt. 
-      		                       //       Das bedeutet, dass der Zurück-Button des Geräts erst einmal alle Activities aus der Historie durchl�uft,
+      		                       //       Das bedeutet, dass der Zurück-Button des Geräts erst einmal alle Activities aus der Historie durchläuft,
       		                       //       wenn man ihn in der Hauptmaske betätigt.
     		
 			
 		}else{
-			Log.d("FGLSTATE", "onOptionsItemSelected() für speziell definierte actionBarId NICHT gefunden.");
+			Log.d("FGLSTATE", ".onOptionsItemSelected() für speziell definierte actionBarId NICHT gefunden.");
 			
 			// Handle presses on the action bar items
 		    switch (id) {
@@ -202,16 +207,16 @@ public class DisplayMessageActivity<T> extends AppCompatActivity {
 		            openSettings();
 		            return true;
 		        case R.id.home:
-		        	Log.d("FGLSTATE", "onOptionsItemSelected() für HOME item.id= '" + id + "'");
+		        	Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() für HOME item.id= '" + id + "'");
 		        case R.id.homeAsUp:
-		        	Log.d("FGLSTATE", "onOptionsItemSelected() für HOMEASUP item.id= '" + id + "'");
+		        	Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() für HOMEASUP item.id= '" + id + "'");
 		        case R.id.up:
-		        	Log.d("FGLSTATE", "onOptionsItemSelected() für HUP item.id= '" + id + "'");
+		        	Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() für HUP item.id= '" + id + "'");
 		        case 16908332:
-		        	//DAS WIRD AUS iregendeinem Grund nicht ausgef�hrt. Darum in den if-Abfrage vorneweg verlagert.
-		        	Log.d("FGLSTATE", "onOptionsItemSelected() für speziell definierte actionBarId ohne in R-Klasse vohranden zu sein: item.id= '" + id + "'");	        		        
+		        	//DAS WIRD AUS iregendeinem Grund nicht ausgeführt. Darum in den if-Abfrage vorneweg verlagert.
+		        	Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() für speziell definierte actionBarId ohne in R-Klasse vohranden zu sein: item.id= '" + id + "'");	        		        
 		        default:
-		        	Log.d("FGLSTATE", "onOptionsItemSelected() für default item.id= '" + id + "'");
+		        	Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() für default item.id= '" + id + "'");
 		            return super.onOptionsItemSelected(item);
 		    }
 		}
