@@ -199,10 +199,13 @@ public class DisplayWebviewActivityForSearch<T> extends AppCompatActivity {
 		int id = item.getItemId();		
 		Log.d("FGLSTATE", this.getClass().getSimpleName()+".onOptionsItemSelected() -geclickte id ='"+ id +"'.");
 		
-		if(id==16908332){
+		switch(id) {
+		case 16908332:
 			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onOptionsItemSelected() -geclickt wurde auf den 'Zurück-Link' der Optionsleiste.");
+			Intent intent = new Intent(this, MainActivity.class);	
+			
 		//Packe den neuen Wert in das StoreObjekt zurück.
-			PlaceholderFragment<T> frgmain = (PlaceholderFragment<T>) getFragmentManager().findFragmentById(R.id.container);
+		PlaceholderFragment<T> frgmain = (PlaceholderFragment<T>) getFragmentManager().findFragmentById(R.id.container);
 			
 		//TODO GOON 20161205: Packe Testweise die Dummy-ArrayListe in das StoreObjekt.
 		//Packe das StoreObjekt in das Bundle
@@ -217,45 +220,42 @@ public class DisplayWebviewActivityForSearch<T> extends AppCompatActivity {
 						
 			//TODO GOON: Packe testweise eine ArrayListe hier herein, versuche diese dann entgegenzunehmen.
 	        //                    Das Ziel ist es so die ArrayListe im ListenFragment auch zu füllen.
-			// ArrayList<String>listaTemp02=new ArrayList<String>();
-	         //listaTemp02.add("TEST02");
-	        // objStore.put(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT, listaTemp02);
-			
-			//Versuch X: Gib an die aufgerufene Funktion den Wert zurück
-			Bundle bundle = new Bundle();
-			bundle.putSerializable(MyMessageHandler.EXTRA_STORE, objStore);	 //ABER: Das objStore-Objekt scheint nur zu überleben, wenn es aus einer Activity kommt. Kommt es aus einem Fragment, wird es in der aufgerufenen Activity nicht mehr empfangen. Es ist null.                 
-	       	    			    			            	            
-	        //Start an intent mit dem Ziel diesen in der onResume Methpde entgegenzunehmen.
-	        //natürlich nicht in den Intent Packen, der dieser Activity beim Start mitgegeben worden ist 
-	        //sondern mache einen neuen... getIntent().putExtras(bundle);
-			
-	        bundle.putString("TESTSTRING", "ein teststring");
-			Intent intent = new Intent(this, MainActivity.class);	    		
-			intent.putExtras(bundle);
-			//intent.putExtra(MyMessageHandler.EXTRA_STORE, objStore); //So wird nix entgegengenommen	
+			ArrayList<String>listaTemp02=new ArrayList<String>();
+	        listaTemp02.add("TEST02");
+	        objStore.put(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT, listaTemp02);
+				
+			// Versuch Z: Mache ein nagelneues Store - Objekt
+			//MyMessageStoreFGL<T> objStoreNew = new MyMessageStoreFGL<T>();			
+			//objStoreNew.put(MyMessageHandler.RESUME_MESSAGE, "TEST Z");
+						 
+//	        bundle.putSerializable(MyMessageHandler.EXTRA_STORE, objStore);	 //ABER: Das objStore-Objekt scheint nur zu überleben, wenn es aus einer Activity kommt. Kommt es aus einem Fragment, wird es in der aufgerufenen Activity nicht mehr empfangen. Es ist null.                 
+	      //  bundle.putSerializable(MyMessageHandler.EXTRA_STORE, objStoreNew);	 //ABER: Das objStore-Objekt scheint nur zu überleben, wenn es aus einer Activity kommt. Kommt es aus einem Fragment, wird es in der aufgerufenen Activity nicht mehr empfangen. Es ist null.
+      	        			    	
+			//intent.putExtras(bundle);
+			intent.putExtra(MyMessageHandler.EXTRA_STORE, objStore); 
+			//intent.putExtra(MyMessageHandler.RESUME_MESSAGE,"TEST XYZ");
+			//intent.putExtra(MyMessageHandler.EXTRA_STORE, bundle); //So wird nix entgegengenommen			
 			startActivity(intent); //Merke: Nachteil ist, das jeder Activity-Start quasi in eine History kommt. 
 	  		                       //       Das bedeutet, dass der Zurück-Button des Geräts erst einmal alle Activities aus der Historie durchläuft,
 	  		                       //       wenn man ihn in der Hauptmaske benötigt.
 			}//end if objStore == null
-		}//end if id == zurück-Button
+		//}//end if id == zurück-Button
 										
-		if (id == R.id.action_settings) {
 			return true;
-		}
-		
-		if (id == R.id.action_end) {
+		case R.id.action_settings:
+			return true;
+		case R.id.action_end:
 			//finish(); //Aber: Beendet nur diese Activity, nicht aber die Start Activity
 			finishAffinity(); //Beendet auch alle "Parent Activities", Ab Android 4.1.
-		}
-		
-		if (id == R.id.action_print){
-			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onOptionsItemSelected(..) - PRINT.");
-			
-			//Idee aus Android SDK Legacy - API Demos - Bereich: API/APPS/printHTMLfromScreen.java  
-			print();
+			return true;
+		case R.id.action_print:
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onOptionsItemSelected(..) - PRINT.");						 
+			print();//Idee aus Android SDK Legacy - API Demos - Bereich: API/APPS/printHTMLfromScreen.java 
             return true;
+       default:
+    	   Log.d("FGLSTATE", this.getClass().getSimpleName()+".onOptionsItemSelected(..) - DEFAULT.");
+    	   return super.onOptionsItemSelected(item); //WICHTIG: Wenn das ausgeführt wird, habe ich es nie geschaft etwas über intent.extras zurückzugeben!
 		}
-		return super.onOptionsItemSelected(item);
 	}
 	
 	 private void print() {
@@ -282,20 +282,6 @@ public class DisplayWebviewActivityForSearch<T> extends AppCompatActivity {
 	 */
 	public static class PlaceholderFragment<T> extends Fragment {
 		private MyWebViewClient objWebViewClient=null;
-		
-		
-		private String sMessageCurrent=null;
-		private void setMessageCurrent(String message) {
-			this.sMessageCurrent= message;
-			Log.d("FGLSTATE", this.getClass().getSimpleName()+". setMessageCurrent() für '" + message + "'");
-			
-		}
-		private String getMessageCurrent(){		
-			if(this.sMessageCurrent==null) this.sMessageCurrent=new String("");
-			Log.d("FGLSTATE", this.getClass().getSimpleName()+". getMessageCurrent() mit '" + this.sMessageCurrent + "'");
-			return this.sMessageCurrent;		
-		}
-		
 		/* MERKE: objStore Objekt, muss auf Activity-Ebene sein. Ansonsten geht es beim Start einer anderen Activity verloren
 		private MyMessageStoreFGL<T> objStore=null;
 		private void setMessageStore(MyMessageStoreFGL<T> objStore){
@@ -316,7 +302,28 @@ public class DisplayWebviewActivityForSearch<T> extends AppCompatActivity {
 			DisplayWebviewActivityForSearch objActivityParent = (DisplayWebviewActivityForSearch)this.getActivity();
 			return objActivityParent.getMessageStore();
 		}
-		
+
+		private void setMessageCurrent(String message) {
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+". setMessageCurrent() für '" + message + "'");
+			MyMessageStoreFGL<T> objStore = this.getMessageStore();
+			if(objStore!=null){
+				objStore.put(message, MyMessageHandler.RESUME_MESSAGE);
+			}else{
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+". setMessageCurrent() findet kein Store Objekt.");
+			}					
+		}
+		private String getMessageCurrent(){					
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+". getMessageCurrent() gestartet.");
+			String sReturn = new String("");
+			MyMessageStoreFGL<T> objStore = this.getMessageStore();
+			if(objStore!=null){
+				sReturn = objStore.getString(MyMessageHandler.RESUME_MESSAGE);
+			}else{
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+". getMessageCurrent() findet kein Store Objekt.");
+			}
+			return sReturn;
+		}
+				
 		public PlaceholderFragment() {
 		}
 

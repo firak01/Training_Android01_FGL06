@@ -204,36 +204,42 @@ public class DisplayMessageActivityForResult<T> extends AppCompatActivity {
 	      		                       //       Das bedeutet, dass der Zurück-Button des Geräts erst einmal alle Activities aus der Historie durchläuft,
 	      		                       //       wenn man ihn in der Hauptmaske benötigt.
 				}//objStore!=null
+				return true;
 			}else{
 				Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() für speziell definierte actionBarId NICHT gefunden.");
 				
 				// Handle presses on the action bar items
 			    switch (id) {
 			    	case R.id.action_end:
+			    		Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() für FINISH item.id= '" + id + "'");
 						//finish(); //Aber: Beendet nur diese Activity, nicht aber die Start Activity
 						finishAffinity(); //Beendet auch alle "Parent Activities", Ab Android 4.1.		
+						return true;
 			        case R.id.action_search:
+			        	Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() für ACTION_SEARCH item.id= '" + id + "'");
 			            openSearch();
 			            return true;
 			        case R.id.action_settings:
+			        	Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() für ACTION_SETTINGS item.id= '" + id + "'");
 			            openSettings();
 			            return true;
 			        case R.id.home:
 			        	Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() für HOME item.id= '" + id + "'");
 			        case R.id.homeAsUp:
 			        	Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() für HOMEASUP item.id= '" + id + "'");
+			        	return true;
 			        case R.id.up:
 			        	Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() für HUP item.id= '" + id + "'");
+			        	return true;
 			        case 16908332:
 			        	//DAS WIRD AUS iregendeinem Grund nicht ausgeführt. Darum in den if-Abfrage vorneweg verlagert.
-			        	Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() für speziell definierte actionBarId ohne in R-Klasse vohranden zu sein: item.id= '" + id + "'");	        		        
+			        	Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() für speziell definierte actionBarId ohne in R-Klasse vohranden zu sein: item.id= '" + id + "'");
+			        	return true;
 			        default:
 			        	Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() für default item.id= '" + id + "'");
-			            return super.onOptionsItemSelected(item);
+			            return super.onOptionsItemSelected(item);//WICHTIG: Wenn das ausgeführt wird, habe ich es nie geschaft etwas über intent.extras zurückzugeben!
 			    }
-			}
-			
-			return true;
+			}						
 		}
 
 		
