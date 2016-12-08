@@ -228,22 +228,23 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 		return super.onOptionsItemSelected(item);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void addElementToSearchList(View view){
 		Log.d("FGLSTATE", "MainActivity.addElementToSearchList()");
 		   
 		EditText editText = (EditText) findViewById(R.id.edit_message);
 		if(editText!=null){
 			String message = editText.getText().toString();		
-			Log.d("FGLSTATE", "MainActivity.addElementToSearchList(): message = " + message);
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+".addElementToSearchList(): message = " + message);
 			
 			//Besser als das Standard String.replace und Pattern zu verwenden ist hier die JAZKernel-Hilfsklasse
 			message = MyMessageHandler.createNormedMessage(message);							
-			Log.d("FGLSTATE", "sendessageForResult(): message nach der Normierung = " + message);
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+".addElementToSearchList() message nach der Normierung = " + message);
 			
 			if(!StringZZZ.isEmpty(message)){													
-				PlaceholderFragmentList frgList = (PlaceholderFragmentList)getSupportFragmentManager().findFragmentByTag("FRAGMENT_MAIN_LIST");
+				PlaceholderFragmentList<T> frgList = (PlaceholderFragmentList<T>)getSupportFragmentManager().findFragmentByTag("FRAGMENT_MAIN_LIST");
 	            frgList.addElement(message);		//hier passiert richtig viel...	
-				Log.d("FGLSTATE", "MainActivity.addElementToSearchList(): message hinzugefügt");		
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+".addElementToSearchList(): message hinzugefügt");		
 				
 				//Lösche nun den übergebenen Text aus dem Eingabefeld
 				editText.setText("");
@@ -910,17 +911,26 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 			return objActivityParent.getMessageStore();
 		}
 		
-		
-		private ArrayList<String> listaSearchString = new ArrayList<String>();//Für die Liste der Suchwerte, sie wird gefüllt. Wenn sie leer ist, wird ein spezieller "Leereintrag" angezeigt.
+		//Die Daten nur noch im objectStore der MainActivity halten.
+		//private ArrayList<String> listaSearchString = new ArrayList<String>();//Für die Liste der Suchwerte, sie wird gefüllt. Wenn sie leer ist, wird ein spezieller "Leereintrag" angezeigt.
+		@SuppressWarnings({ "unchecked"})
 		private ArrayList<String>getSearchElements(){
-			return listaSearchString;
+			ArrayList<String> listaReturn = new ArrayList<String>();
+			MyMessageStoreFGL<T> objStore = this.getMessageStore();
+			if(objStore!=null){
+				listaReturn = (ArrayList<String>) objStore.getArrayList(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT);
+			}
+			return listaReturn;
 		}
 		private void setSearchElements(ArrayList<String> listaSearchString){
-			this.listaSearchString = listaSearchString;
+			MyMessageStoreFGL<T> objStore = this.getMessageStore();
+			if(objStore!=null){
+				objStore.put(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT, listaSearchString);
+			}
 		}
 		
-		private ArrayAdapter arrayAdapter;
-		private void setArrayAdapter(ArrayAdapter adapter){
+		private ArrayAdapter<String> arrayAdapter;
+		private void setArrayAdapter(ArrayAdapter<String> adapter){
 			this.arrayAdapter=adapter;
 		}
 		private ArrayAdapter<String> getArrayAdapter(){
@@ -933,11 +943,13 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 		public void addElement(String sToAdd){
 			ArrayList<String>listatemp = this.getSearchElements();
 			listatemp.add(sToAdd);
+			this.setSearchElements(listatemp);//!! Das Zurückschreiben ist notwendig ist. Es wird ansonsten nur der aktuellste Wert in die Liste gesetzt.
 			
 			//1. Versuch: Cast Fehler. man man nicht Object[] in String[] casten  ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, (String[])listaSearchString.toArray());//Haken werden hinter den Elementen angezeigt.
 			//2. Versuch: NullPointer Exception: Attempt to get length of null Array.
 			//The toArray() method without passing any argument returns Object[]. So you have to pass an array as an argument, which will be filled with the data from the list, and returned. You can pass an empty array as well, but you can also pass an array with the desired size.
-			String[] saTemp = listaSearchString.toArray(new String[listaSearchString.size()]);														
+			//String[] saTemp = listaSearchString.toArray(new String[listaSearchString.size()]);														
+			String[] saTemp = listatemp.toArray(new String[listatemp.size()]);
 			Log.d("FGLSTATE", this.getClass().getSimpleName()+".addElement() saTemp erzeugt.");
 			
 			//das Adapter Benachrichtigen reicht nicht
@@ -1014,18 +1026,20 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 				}
 				
 			
-				//Zeige die Liste mit Suchelementen an.			
-				if(this.getSearchElements().isEmpty()){
+				//Zeige die Liste mit Suchelementen an.	
+				ArrayList<String> listaTemp = (ArrayList<String>) this.getSearchElements();
+				
+				if(listaTemp.isEmpty()){
 					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() ArrayList für Elemente ist leer.");
 					//Merke: Im onStart wird ein Element erstellt, dass angezeigt werden soll, wenn die Liste leer ist.
 				}else{
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() ArrayList mit Elementen ist gefüllt. Anzahl Elemente: " + listaSearchString.size());
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() ArrayList mit Elementen ist gefüllt. Anzahl Elemente: " + getSearchElements().size());
 				}
 										
 					//1. Versuch: Cast Fehler. man man nicht Object[] in String[] casten  ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, (String[])listaSearchString.toArray());//Haken werden hinter den Elementen angezeigt.
 					//2. Versuch: NullPointer Exception: Attempt to get length of null Array.
 					//The toArray() method without passing any argument returns Object[]. So you have to pass an array as an argument, which will be filled with the data from the list, and returned. You can pass an empty array as well, but you can also pass an array with the desired size.
-					String[] saTemp = this.getSearchElements().toArray(new String[listaSearchString.size()]);
+					String[] saTemp = listaTemp.toArray(new String[listaTemp.size()]);
 																
 					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() saTemp erzeugt.");
 					ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, saTemp);//Haken werden hinter den Elementen angezeigt.
@@ -1079,28 +1093,28 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 					//Merke: Bei Fragments gibt es keine onRestoreInstanceState()-Methode. Hole das Bundle in onActivityCreated ab.
 		}
 		
+		@SuppressWarnings("unchecked")
 		public void onActivityCreated(Bundle savedInstanceState){
 			super.onActivityCreated(savedInstanceState);	
 			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated(bundle) wurde aktiviert");
 			if(savedInstanceState!=null){
-				MyMessageStoreFGL objStore = (MyMessageStoreFGL) savedInstanceState.getSerializable(MyMessageHandler.EXTRA_STORE);
+				MyMessageStoreFGL<T> objStore = (MyMessageStoreFGL<T>) savedInstanceState.getSerializable(MyMessageHandler.EXTRA_STORE);
 				if(objStore==null){
 					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated(): objStore ist null");
 				}else{
 					String sMessageCurrent = objStore.getString(MyMessageHandler.RESUME_MESSAGE);
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated(): sMessageCurrent = " + sMessageCurrent);
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated(): sMessageCurrent = " + sMessageCurrent);				
 				
+					//GRUND: SERIALIZIERUNG geht nur mit expliziter Klasse, ggf. reicht auch hier ein "dreckiger" Typecast		
+					ArrayList<String> listaTemp = (ArrayList<String>) objStore.get(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT);
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated() mit Bundle '" + listaTemp.size() + "' ArrayList SuchListen-Elementen.");
+					this.setSearchElements(listaTemp);			
 				
-				//GRUND: SERIALIZIERUNG geht nur mit expliziter Klasse, ggf. reicht auch hier ein "dreckiger" Typecast		
-				ArrayList listaTemp = (ArrayList) objStore.get(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT);
-				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated() mit Bundle '" + listaTemp.size() + "' ArrayList SuchListen-Elementen.");
-				this.setSearchElements(listaTemp);			
-				
-				if(this.getSearchElements().isEmpty()){
+				if(listaTemp.isEmpty()){
 					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated() ArrayList für Elemente ist leer.");
 					//Merke: Im onStart wird ein Element erstellt, dass angezeigt werden soll, wenn die Liste leer ist.
 				}else{
-					Log.d("FGLSTATE",this.getClass().getSimpleName()+".onActivityCreated() ArrayList mit Elementen ist gefüllt. Anzahl Elemente: " + listaSearchString.size());
+					Log.d("FGLSTATE",this.getClass().getSimpleName()+".onActivityCreated() ArrayList mit Elementen ist gefüllt. Anzahl Elemente: " + listaTemp.size());
 					
 					//Hier, versuche die ListView zu füllen
 					ListView vwList;					
@@ -1114,7 +1128,7 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 						//1. Versuch: Cast Fehler. man man nicht Object[] in String[] casten  ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, (String[])listaSearchString.toArray());//Haken werden hinter den Elementen angezeigt.
 						//2. Versuch: NullPointer Exception: Attempt to get length of null Array.
 						//The toArray() method without passing any argument returns Object[]. So you have to pass an array as an argument, which will be filled with the data from the list, and returned. You can pass an empty array as well, but you can also pass an array with the desired size.
-						String[] saTemp = this.getSearchElements().toArray(new String[this.getSearchElements().size()]);
+						String[] saTemp = listaTemp.toArray(new String[listaTemp.size()]);
 																	
 						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated() saTemp erzeugt.");
 						ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, saTemp);//Haken werden hinter den Elementen angezeigt.

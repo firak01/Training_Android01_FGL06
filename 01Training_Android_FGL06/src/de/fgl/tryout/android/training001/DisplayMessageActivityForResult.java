@@ -178,7 +178,7 @@ public class DisplayMessageActivityForResult<T> extends AppCompatActivity {
 				//Hole in der MainActivity die Werte zurück.....				
 				MyMessageStoreFGL<T> objStore = this.getMessageStore();
 				if(objStore==null){
-					
+					Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() - Store Objekt ist NULL'.");	
 				}else{
 				//! Wenn das gleiche zurückgegeben wir, was reinkommt, braucht man das nicht zu holen und zurückzuschreiben.
 				Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() - MessageCurrent ='"+ this.getMessageCurrent()+"'.");				
@@ -186,9 +186,9 @@ public class DisplayMessageActivityForResult<T> extends AppCompatActivity {
 						
 				//TODO GOON: Packe testweise eine ArrayListe hier herein, versuche diese dann entgegenzunehmen.
 	            //                    Das Ziel ist es so die ArrayListe im ListenFragment auch zu füllen.
-				 ArrayList<String>listaTemp02=new ArrayList<String>();
-		         listaTemp02.add("TEST02");
-		         objStore.put(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT, listaTemp02);
+//				 ArrayList<String>listaTemp02=new ArrayList<String>();
+//		         listaTemp02.add("TEST02");
+//		         objStore.put(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT, listaTemp02);
 				
 				//Versuch X: Gib an die aufgerufene Funktion den Wert zurück
 	    		Bundle bundle = new Bundle();

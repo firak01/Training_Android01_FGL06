@@ -220,9 +220,9 @@ public class DisplayWebviewActivityForSearch<T> extends AppCompatActivity {
 						
 			//TODO GOON: Packe testweise eine ArrayListe hier herein, versuche diese dann entgegenzunehmen.
 	        //                    Das Ziel ist es so die ArrayListe im ListenFragment auch zu füllen.
-			ArrayList<String>listaTemp02=new ArrayList<String>();
-	        listaTemp02.add("TEST02");
-	        objStore.put(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT, listaTemp02);
+//			ArrayList<String>listaTemp02=new ArrayList<String>();
+//	        listaTemp02.add("TEST02");
+//	        objStore.put(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT, listaTemp02);
 				
 			// Versuch Z: Mache ein nagelneues Store - Objekt
 			//MyMessageStoreFGL<T> objStoreNew = new MyMessageStoreFGL<T>();			

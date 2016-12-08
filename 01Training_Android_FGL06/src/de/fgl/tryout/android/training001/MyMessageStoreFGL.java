@@ -23,9 +23,6 @@ import basic.zBasic.util.abstractList.CollectionAndroidUtils;
  */
 public class MyMessageStoreFGL<T> extends ObjectZZZ implements Serializable
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -4868128170326164471L;
 	//private Bundle objBundleAll=null; //Versuch das mal statt eine Hashmap zu verwenden, weil es Android spezifisch ist. //ABER: Bundle ist nicht serialisierbar!!! Darum Fehler!!!
 	private HashMap<String,T> objHmAll=null;
@@ -66,6 +63,14 @@ public class MyMessageStoreFGL<T> extends ObjectZZZ implements Serializable
 	}
 	public String getString(String sKey){
 		return (String) this.getHashMapAll().get(sKey);
+	}
+	@SuppressWarnings("unchecked")
+	public ArrayList<T> getArrayList(String sKey){
+		ArrayList<T> listaReturn = (ArrayList<T>) this.getHashMapAll().get(sKey);
+		if(listaReturn==null){
+			listaReturn=new ArrayList<T>();			
+		}
+		return listaReturn;
 	}
 	@SuppressWarnings("unchecked")
 	private HashMap<String,T>bundleToHashMap(Bundle objBundle){
