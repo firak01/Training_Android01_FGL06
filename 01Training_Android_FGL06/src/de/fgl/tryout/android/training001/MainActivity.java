@@ -228,29 +228,7 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 		return super.onOptionsItemSelected(item);
 	}
 	
-	@SuppressWarnings("unchecked")
-	public void addElementToSearchList(View view){
-		Log.d("FGLSTATE", "MainActivity.addElementToSearchList()");
-		   
-		EditText editText = (EditText) findViewById(R.id.edit_message);
-		if(editText!=null){
-			String message = editText.getText().toString();		
-			Log.d("FGLSTATE", this.getClass().getSimpleName()+".addElementToSearchList(): message = " + message);
-			
-			//Besser als das Standard String.replace und Pattern zu verwenden ist hier die JAZKernel-Hilfsklasse
-			message = MyMessageHandler.createNormedMessage(message);							
-			Log.d("FGLSTATE", this.getClass().getSimpleName()+".addElementToSearchList() message nach der Normierung = " + message);
-			
-			if(!StringZZZ.isEmpty(message)){													
-				PlaceholderFragmentList<T> frgList = (PlaceholderFragmentList<T>)getSupportFragmentManager().findFragmentByTag("FRAGMENT_MAIN_LIST");
-	            frgList.addElement(message);		//hier passiert richtig viel...	
-				Log.d("FGLSTATE", this.getClass().getSimpleName()+".addElementToSearchList(): message hinzugefügt");		
-				
-				//Lösche nun den übergebenen Text aus dem Eingabefeld
-				editText.setText("");
-			}
-		}//end if editText!=null
-	}
+	
 	
 	
 	
@@ -575,6 +553,7 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 			Button button_send_for_result = (Button) rootView.findViewById(R.id.button_send_for_result);
 		    Button button_send = (Button) rootView.findViewById(R.id.button_send);
 		    Button button_search = (Button) rootView.findViewById(R.id.button_search_web);
+		    Button button_add = (Button) rootView.findViewById(R.id.button_add_search_list);
 		    
 			//FGL 20161204: Das geht so nicht... zumindest in Fragments geht das nicht.
 		   /*button.setOnClickListener(new OnClickListener()
@@ -590,6 +569,7 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 			button_send_for_result.setOnClickListener(this);
 			button_send.setOnClickListener(this);
 			button_search.setOnClickListener(this);
+			button_add.setOnClickListener(this);
 												
 		   return rootView;
 		}
@@ -610,6 +590,9 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 	            break;
 	        case R.id.button_search_web:
 	        	sendMessageToSearchWeb(v);
+	            break;
+	        case R.id.button_add_search_list:
+	        	addElementToSearchList(v);
 	            break;
 	        default: 
 	        	Log.d("FGLSTATE", this.getClass().getSimpleName()+".onClick(v) noch nicht implementiert für Id v.getId() = '" + v.getId() + "'");
@@ -826,6 +809,31 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 		}
 		
 		
+		/** Called when the user clicks the "Add" button */
+		@SuppressWarnings("unchecked")
+		public void addElementToSearchList(View view){
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+".addElementToSearchList()");
+			   
+			EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
+			if(editText!=null){
+				String message = editText.getText().toString();		
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+".addElementToSearchList(): message = " + message);
+				
+				//Besser als das Standard String.replace und Pattern zu verwenden ist hier die JAZKernel-Hilfsklasse
+				message = MyMessageHandler.createNormedMessage(message);							
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+".addElementToSearchList() message nach der Normierung = " + message);
+				
+				if(!StringZZZ.isEmpty(message)){
+					//Das ist dann die Kommunikation mit einem anderen Fragment aus einem Fragment heraus !!!
+					PlaceholderFragmentList<T> frgList = (PlaceholderFragmentList<T>)getActivity().getSupportFragmentManager().findFragmentByTag("FRAGMENT_MAIN_LIST");
+		            frgList.addElement(message);		//hier passiert richtig viel...									
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".addElementToSearchList(): message hinzugefügt");		
+										
+					//Lösche nun den übergebenen Text aus dem Eingabefeld
+					editText.setText("");
+				}
+			}//end if editText!=null
+		}
 		
 		/** Called when the user clicks the Send button */
 		public void sendMessage(View view) {
