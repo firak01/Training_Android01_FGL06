@@ -21,6 +21,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.EditText;
 import android.os.Build;
 import android.print.PrintManager;
 
@@ -274,7 +275,11 @@ public class DisplayWebviewActivityForSearch<T> extends AppCompatActivity {
 	        String sDocTitle = new String("mein_WebView_Ausdruck");
 	        printManager.print("MotoGP stats", mWebView.createPrintDocumentAdapter(sDocTitle), null);
 	    }
+	 
+	 
+	
 
+//################ INNERE FRAGMENT KLASSE(N) AB HIER 
 	/**
 	 * A placeholder fragment containing the SearchView
 	 * FGL: Dieser Code basiert auf "DisplayWebviewActivityForVersion", der Lösung für Dialogbox & Webview,
@@ -493,4 +498,4 @@ public class DisplayWebviewActivityForSearch<T> extends AppCompatActivity {
 			 return this.objWebViewClient;
 		 }
 	}//END CLASS PLACEHOLDERFRAGMENT
-}
+}//END CLASS DisplayWebviewActivityForSearch

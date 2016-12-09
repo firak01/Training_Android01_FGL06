@@ -890,8 +890,11 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 	//#########################################################################
 	/**
 	 * A placeholder fragment containing a simple view.
+	 * ACHTUNG: Der Code für die Buttons soll hier herein. 
+	 *          Daher muss der Button Event-Listener extra hier gesetzt werden.
+	 *          Damit dann die onClick Methode vorhanden ist, muss View.OnClickListern implementiert werden.
 	 */
-	public static class PlaceholderFragmentList<T> extends Fragment {		
+	public static class PlaceholderFragmentList<T> extends Fragment implements OnClickListener{		
 //		private MyMessageStoreFGL<T> objStore=null;		//Iregendwie geht der Store in den Fragments immer verloren, darum nur in der Activity halten.
 //		private void setMessageStore(MyMessageStoreFGL<T> objStore){
 //			this.objStore = objStore;
@@ -979,8 +982,17 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 		        Button buttonSearchFromList = (Button)((AppCompatActivity)getContext()).findViewById(R.id.button_search_web_from_list);
 		        if(buttonSearchFromList!=null){
 		        	buttonSearchFromList.setEnabled(true);
-		        	buttonSearchFromList.setClickable(true);
+		        	buttonSearchFromList.setClickable(true);//TODO: Bei einem Element der Liste Clickbar, ab 2 Elementen erst Clickbar, wenn mindestens 1 Element der Liste ausgewählt wurde.
 		        }//buttonSearchFromList != null
+		        
+		        //Mache den Button "Entferne aus Liste" aktiviert.
+		        Button buttonRemoveFromList = (Button)((AppCompatActivity)getContext()).findViewById(R.id.button_remove_from_list);
+		        if(buttonRemoveFromList!=null){
+		        	buttonRemoveFromList.setEnabled(true);
+		        	buttonRemoveFromList.setClickable(true);//TODO: Bei einem Element der Liste Clickbar, ab 2 Elementen erst Clickbar, wenn mindestens 1 Element der Liste ausgewählt wurde.
+		        }//buttonRemoveFromList != null
+		        
+		        
 			}//vwList!=null
 	    
 		}
@@ -990,6 +1002,31 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView(): START.");
 			View rootView = inflater.inflate(R.layout.fragment_main_list, container, false);
 			
+			//###########################################################
+			//FGL 20161204: Wenn man die Events im Fragment selbst haben will,
+			//              muss man den Event-Handler am Button hier einbauen.
+			//              sonst gibt es Fehlermeldungen der Art:
+			//12-04 06:02:41.664: E/AndroidRuntime(1778): java.lang.IllegalStateException: Could not find method sendMessage(View) in a parent or ancestor Context for android:onClick attribute defined on view class android.support.v7.widget.AppCompatButton with id 'button_send'
+			//              Alternativ dazu die Methode in der Activity belassen, was meiner Meinung nach eine unschöne Lösung ist, wg. mangelnder Kapselung.
+			Button button_removeFromList = (Button) rootView.findViewById(R.id.button_remove_from_list);
+		    Button button_searchFromList = (Button) rootView.findViewById(R.id.button_search_web_from_list);
+		    
+			//FGL 20161204: Das geht so nicht... zumindest in Fragments geht das nicht.
+		   /*button.setOnClickListener(new OnClickListener()
+		   {
+		             @Override
+		             public void onClick(View v)
+		             {
+		                // do something
+		             } 
+		   }); */
+			
+			//FGL 20161204: Alternativer Weg für den Listener, wenn das Fragment view.OnClickListener implementiert
+			button_removeFromList.setOnClickListener(this);		
+			button_searchFromList.setOnClickListener(this);
+			
+			
+			//#####################################################
 			//Hier, versuche die ListView zu füllen
 			ListView vwList;
 			vwList = (ListView) rootView.findViewById(R.id.list_search_web);
@@ -1049,6 +1086,25 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() Arrayadapter gesetzt.");									
 			}
 			return rootView;
+		}
+		
+		//Damit die Events der Buttons HIER im Fragment und nicht in der Activity stehen, den Event hier abfangen und die ID auswerten.
+		//!!! Daher muss das Fragment View.onClickListener implementieren !!!
+		//Jeder Button muss aber in onCreateView(...) gesucht werden und explizit mit button.setOnClickListener(this); den Listener zugewiesen bekommen.
+		@Override
+		public void onClick(View v) {
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onClick(v) wurde aktiviert");
+		    switch (v.getId()) {
+		    case R.id.button_remove_from_list:
+		    	removeFromList(v);
+	            break;
+		    case R.id.button_search_web_from_list:
+		    	sendMessageToSearchWebFromList(v);
+	            break;
+	        default: 
+	        	Log.d("FGLSTATE", this.getClass().getSimpleName()+".onClick(v) noch nicht implementiert für Id v.getId() = '" + v.getId() + "'");
+	        	break;
+		    }
 		}
 		
 		@Override
@@ -1167,6 +1223,59 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 				}							
 			}	
 		}
+		
+		 /** Called when the user clicks the RemoveFromList button */
+		public void removeFromList(View view) {
+		 			
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+".removerFromList(): START");
+			
+						
+			//-----------------------------
+			//Mache eine Hilfsklasse, für das Wegsichern und auch wieder Zurückholen von den Intent-Informationen zwischen den Activities.
+			MyMessageStoreFGL<T> objStore = this.getMessageStore();
+			if(objStore==null){
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+".removerFromList(): KEIN STORE OBJEKT.");
+			}else{
+				//Hole aus dem Store die ArrayList
+				//objStore.put(MyMessageHandler.RESUME_MESSAGE, message); //IDEE: das sollte der Wert der UI-Komponente sein, also R.id.edit_message
+				
+				//Hole die markierte Position aus der Designelement-Liste
+				//Übergib den Store als ganzes an den Intent
+				//intent.putExtra(MyMessageHandler.EXTRA_STORE, objStore);//objStore muss serializable sein
+				//------------------------------				
+			}
+		
+		
+			//intent.putExtra(MyMessageHandler.EXTRA_MESSAGE, message);
+			//startActivityForResult(intent,1);
+		}
+		
+		 /** Called when the user clicks the SearchWebFromList button */
+		public void sendMessageToSearchWebFromList(View view) {
+		 			
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+".sendMessageToSearchWebFromList(): START");
+			
+						
+			//-----------------------------
+			//Mache eine Hilfsklasse, für das Wegsichern und auch wieder Zurückholen von den Intent-Informationen zwischen den Activities.
+			MyMessageStoreFGL<T> objStore = this.getMessageStore();
+			if(objStore==null){
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+".sendMessageToSearchWebFromList(): KEIN STORE OBJEKT.");
+			}else{
+				//Hole aus dem Store die ArrayList
+				//objStore.put(MyMessageHandler.RESUME_MESSAGE, message); //IDEE: das sollte der Wert der UI-Komponente sein, also R.id.edit_message
+				
+				//Hole die markierte Position aus der Designelement-Liste
+				//Übergib den Store als ganzes an den Intent
+				//intent.putExtra(MyMessageHandler.EXTRA_STORE, objStore);//objStore muss serializable sein
+				//------------------------------				
+			}
+		
+		
+			//intent.putExtra(MyMessageHandler.EXTRA_MESSAGE, message);
+			//startActivityForResult(intent,1);
+		}
+		
 		
 				
 		private TextView noItems(ListView listView, String text) {
