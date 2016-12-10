@@ -4,7 +4,26 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:scrollbarAlwaysDrawVerticalTrack="true"
+    android:scrollbarStyle="insideOverlay"
+    android:scrollbars="vertical"
     android:theme="@style/Theme.AppCompat.Light"
     tools:context="de.fgl.tryout.android.training001.MainActivity"
-    tools:ignore="MergeRootFrame" />
+    tools:ignore="MergeRootFrame" >
 
+    <ScrollView
+        android:id="@+id/scrollViewActivityMain"
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="1.32" >
+
+        <LinearLayout
+            android:id="@+id/containerScrollViewActivityMain"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical" >
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

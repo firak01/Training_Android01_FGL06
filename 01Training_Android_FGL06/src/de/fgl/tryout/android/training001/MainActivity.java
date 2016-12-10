@@ -123,18 +123,19 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 		setContentView(R.layout.activity_main);
 
 		if (savedInstanceState == null) {
+			//FGL06: füge die Fragments in eine ScrollView, so dass Sie auch als Gesamtheit scrollbar sind
 			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreate() wurde aktiviert. KEIN SAVEDINSTANCESTATE vorhanden");
 			this.fragmentMain =  new PlaceholderFragmentMain();
 			this.fragmentMain.setRetainInstance(true);
 			getSupportFragmentManager().beginTransaction()
-				.add(R.id.container, this.fragmentMain,"FRAGMENT_MAIN").commit();
+				.add(R.id.containerScrollViewActivityMain, this.fragmentMain,"FRAGMENT_MAIN").commit();
 			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreate() FRAGMENT_MAIN erzeugt.");
 			
 			//FGL06: füge eine Liste der Suchbegriffe hinzu, und die Möglichkeit daraus auswählend (ggfs. kombiniert) zu suchen
 			this.fragmentList = new PlaceholderFragmentList();
 			this.fragmentList.setRetainInstance(true);
 			getSupportFragmentManager().beginTransaction()
-				.add(R.id.container, this.fragmentList,"FRAGMENT_MAIN_LIST").commit();
+				.add(R.id.containerScrollViewActivityMain, this.fragmentList,"FRAGMENT_MAIN_LIST").commit();
 			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreate() FRAGMENT_MAIN_LIST erzeugt.");
 			
 			//++++++++++++++++++++++++++++++++++++++++++++++
@@ -545,31 +546,8 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 			View rootView = inflater.inflate(R.layout.fragment_main, container,
 					false);
 			
-			//FGL 20161204: Wenn man die Events im Fragment selbst haben will,
-			//              muss man den Event-Handler am Button hier einbauen.
-			//              sonst gibt es Fehlermeldungen der Art:
-			//12-04 06:02:41.664: E/AndroidRuntime(1778): java.lang.IllegalStateException: Could not find method sendMessage(View) in a parent or ancestor Context for android:onClick attribute defined on view class android.support.v7.widget.AppCompatButton with id 'button_send'
-			//              Alternativ dazu die Methode in der Activity belassen, was meiner Meinung nach eine unschöne Lösung ist, wg. mangelnder Kapselung.
-			Button button_send_for_result = (Button) rootView.findViewById(R.id.button_send_for_result);
-		    Button button_send = (Button) rootView.findViewById(R.id.button_send);
-		    Button button_search = (Button) rootView.findViewById(R.id.button_search_web);
-		    Button button_add = (Button) rootView.findViewById(R.id.button_add_search_list);
-		    
-			//FGL 20161204: Das geht so nicht... zumindest in Fragments geht das nicht.
-		   /*button.setOnClickListener(new OnClickListener()
-		   {
-		             @Override
-		             public void onClick(View v)
-		             {
-		                // do something
-		             } 
-		   }); */
-			
-			//FGL 20161204: Alternativer Weg für den Listener, wenn das Fragment view.OnClickListener implementiert
-			button_send_for_result.setOnClickListener(this);
-			button_send.setOnClickListener(this);
-			button_search.setOnClickListener(this);
-			button_add.setOnClickListener(this);
+			//z.B. registriere künstlich die onClick-Events
+			initButtons();
 												
 		   return rootView;
 		}
@@ -637,31 +615,49 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 		public void onActivityCreated(Bundle savedInstanceState){
 			super.onActivityCreated(savedInstanceState);	
 			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated(bundle) wurde aktiviert");
+			
+			//Damit die Events an den Buttons erhalten bleiben, wie im onCreate();			
+			initButtons();
+			
+			//
 			if(savedInstanceState!=null){
 				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated(bundle)SAVEDINSTANCESTATE IST NICHT NULL");
+				
+				//Greife auf den objectStore der activity zu.
+				MyMessageStoreFGL objStore = ((MainActivity<T>)getActivity()).getMessageStore();
+				if(objStore==null){
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated(): objStore ist null");
+				}else{
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated(): objStore ist NICHT null");
+					
+					//Blende nun ggfs. die verborgenen Buttons wieder ein.
+					initValueDriven(objStore);	
+				}
 				
 				//TODO: 20161204 Ändere das auf den Objekt MessageStore ab. 				
 				//Notwendiger Zweig um Persistierung zurückzuholen. Siehe auch onResume().
 	        	//String sMessageCurrent = (String) savedInstanceState.getSerializable(MyMessageHandler.KEY_MESSAGE_CURRENT);
-				MyMessageStoreFGL objStore = (MyMessageStoreFGL) savedInstanceState.getSerializable(MyMessageHandler.EXTRA_STORE);
-				if(objStore==null){
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated(): objStore ist null");
-				}else{
-					String sMessageCurrent = objStore.getString(MyMessageHandler.RESUME_MESSAGE);
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated(): sMessageCurrent = " + sMessageCurrent);
 				
-	        	if(!StringZZZ.isEmptyNull(sMessageCurrent)&& !StringZZZ.isBlank(sMessageCurrent) & !StringZZZ.isWhitespace(sMessageCurrent)){
-		        	this.setMessageCurrent(sMessageCurrent);
-		        	
-		        	//Sollte man nun irgendwie den String zurück-/einsetzen?
-		        	EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
-		        	if(editText==null){
-		        		Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated(): EditText - Element im UI nicht gefunden.");	    			
-		        	}else{
-		        		editText.setText(sMessageCurrent + " (wiederhergestellt)");
-		        	}
-	        	}   
-				}//if objStore!=null
+//FGL 20161209: Ist das noch notwendig???				
+//				MyMessageStoreFGL objStore = (MyMessageStoreFGL) savedInstanceState.getSerializable(MyMessageHandler.EXTRA_STORE);
+//				if(objStore==null){
+//					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated(): objStore ist null");
+//				}else{
+//					String sMessageCurrent = objStore.getString(MyMessageHandler.RESUME_MESSAGE);
+//					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated(): sMessageCurrent = " + sMessageCurrent);
+//				
+//	        	if(!StringZZZ.isEmptyNull(sMessageCurrent)&& !StringZZZ.isBlank(sMessageCurrent) & !StringZZZ.isWhitespace(sMessageCurrent)){
+//		        	this.setMessageCurrent(sMessageCurrent);
+//		        	
+//		        	//Sollte man nun irgendwie den String zurück-/einsetzen?
+//		        	EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
+//		        	if(editText==null){
+//		        		Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated(): EditText - Element im UI nicht gefunden.");	    			
+//		        	}else{
+//		        		editText.setText(sMessageCurrent + " (wiederhergestellt)");
+//		        	}
+//	        	}   
+//				}//if objStore!=null
 			
 			}else{
 				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated(bundle)SAVEDINSTANCESTATE IST NULL");
@@ -671,37 +667,36 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 //				//       darum gehört der Code hierher, ABER: savedInstanceState ist hier nicht vorhanden.
 //				
 //				//Damit das funktioniert muss onRestoreInstanceState() ausgeführt werden und es muss die lokale Property wieder gefüllt worden sein.
-				String sMessageCurrent = this.getMessageCurrent();
-				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): Wert per Variable sMessageCurrent = " + sMessageCurrent);
-			
-				if(!StringZZZ.isEmptyNull(sMessageCurrent)&& !StringZZZ.isBlank(sMessageCurrent) & !StringZZZ.isWhitespace(sMessageCurrent)){
-					//1. Variante: Als Variable
-					EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
-					editText.setText(sMessageCurrent + MyMessageHandler.MESSAGE_ADDITION_VARIABLE);			
-				}else{
-					//2. Variante: Hole den Wert aus dem MessageStore, der zwischen den Activities ausgetauscht wird.
-					//             Das ist der Normalefall: Die Variable ist nämlich normalerweise weg.
-					MyMessageStoreFGL<T> objStore = (MyMessageStoreFGL<T>) getActivity().getIntent().getSerializableExtra(MyMessageHandler.EXTRA_STORE);
-					if(objStore!=null){
-						this.setMessageStore(objStore);
-													
-						//Nun Versuch sie in inStop() über einen Intent.getExtras zu sichern und hier wiederherzustellen
-						sMessageCurrent = objStore.getString(MyMessageHandler.RESUME_MESSAGE);
-						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): Wert per intent (aus MessageStore) sMessageCurrent = " + sMessageCurrent);			
-							
-						if(!StringZZZ.isEmptyNull(sMessageCurrent)&& !StringZZZ.isBlank(sMessageCurrent) & !StringZZZ.isWhitespace(sMessageCurrent)){
-							//DAS FUNKTIONIERT GGFS. AUCH NICHT!!!
-							EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
-							editText.setText(sMessageCurrent + MyMessageHandler.MESSAGE_ADDITION_INTENT);
-						}else{
-							Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): Wert per intent (aus MessageStore) ist leer oder NULL.");			
-							
-							EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
-							editText.setText("");
-						}
-					}
-				}
-				super.onResume();	
+//				String sMessageCurrent = this.getMessageCurrent();
+//				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): Wert per Variable sMessageCurrent = " + sMessageCurrent);
+//			
+//				if(!StringZZZ.isEmptyNull(sMessageCurrent)&& !StringZZZ.isBlank(sMessageCurrent) & !StringZZZ.isWhitespace(sMessageCurrent)){
+//					//1. Variante: Als Variable
+//					EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
+//					editText.setText(sMessageCurrent + MyMessageHandler.MESSAGE_ADDITION_VARIABLE);			
+//				}else{
+//					//2. Variante: Hole den Wert aus dem MessageStore, der zwischen den Activities ausgetauscht wird.
+//					//             Das ist der Normalefall: Die Variable ist nämlich normalerweise weg.
+//					MyMessageStoreFGL<T> objStore = (MyMessageStoreFGL<T>) getActivity().getIntent().getSerializableExtra(MyMessageHandler.EXTRA_STORE);
+//					if(objStore!=null){
+//						this.setMessageStore(objStore);
+//													
+//						//Nun Versuch sie in inStop() über einen Intent.getExtras zu sichern und hier wiederherzustellen
+//						sMessageCurrent = objStore.getString(MyMessageHandler.RESUME_MESSAGE);
+//						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): Wert per intent (aus MessageStore) sMessageCurrent = " + sMessageCurrent);			
+//							
+//						if(!StringZZZ.isEmptyNull(sMessageCurrent)&& !StringZZZ.isBlank(sMessageCurrent) & !StringZZZ.isWhitespace(sMessageCurrent)){
+//							//DAS FUNKTIONIERT GGFS. AUCH NICHT!!!
+//							EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
+//							editText.setText(sMessageCurrent + MyMessageHandler.MESSAGE_ADDITION_INTENT);
+//						}else{
+//							Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): Wert per intent (aus MessageStore) ist leer oder NULL.");			
+//							
+//							EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
+//							editText.setText("");
+//						}
+//					}
+//				}				
 			}
 		}
 		
@@ -711,43 +706,94 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 		
 		public void onResume(){
 			super.onResume();
-			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): START");			
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): START");	
+			
+			//Damit die künstlich geschaffenen Events an den Buttons bleiben
+			initButtons();
 								
 			String sMessageCurrent = this.getMessageCurrent();
 			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): Wert per Variable sMessageCurrent = " + sMessageCurrent);
 			
 			if(!StringZZZ.isEmptyNull(sMessageCurrent)&& !StringZZZ.isBlank(sMessageCurrent) & !StringZZZ.isWhitespace(sMessageCurrent)){
-				//1. Variante: Als Variable
+				//Wiederherstellen als Variable aus dem StoreObjekt.
 				EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
 				editText.setText(sMessageCurrent + MyMessageHandler.MESSAGE_ADDITION_VARIABLE);			
-			}else{
-				//2. Variante: Hole den Wert aus dem MessageStore, der zwischen den Activities ausgetauscht wird.
-				//             Das ist der Normalefall: Die Variable ist nämlich normalerweise weg.
-				MyMessageStoreFGL<T> objStore = (MyMessageStoreFGL<T>) getActivity().getIntent().getSerializableExtra(MyMessageHandler.EXTRA_STORE);
-				if(objStore==null){
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): KEIN ObjektStore aus dem Intent der Activity erhalten.");						
-				}else{
-					this.setMessageStore(objStore);
-												
-					//Nun Versuch sie in inStop() über einen Intent.getExtras zu sichern und hier wiederherzustellen
-					sMessageCurrent = objStore.getString(MyMessageHandler.RESUME_MESSAGE);
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): Wert per intent (aus MessageStore) sMessageCurrent = " + sMessageCurrent);			
-						
-					if(!StringZZZ.isEmptyNull(sMessageCurrent)&& !StringZZZ.isBlank(sMessageCurrent) & !StringZZZ.isWhitespace(sMessageCurrent)){
-						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): Wert per intent (aus MessageStore) ist gefüllt");	
-						
-						//DAS FUNKTIONIERT GGFS. AUCH NICHT!!!
-						EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
-						editText.setText(sMessageCurrent + MyMessageHandler.MESSAGE_ADDITION_INTENT);
-					}else{
-						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): Wert per intent (aus MessageStore) ist leer oder NULL.");			
-						
-						EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
-						editText.setText("");
-					}
-				}
 			}
+			
+			//20161209: Braucht man das nach der Umstellung auf objStore noch???
+//			else{
+//				//2. Variante: Hole den Wert aus dem MessageStore, der zwischen den Activities ausgetauscht wird.
+//				
+//				MyMessageStoreFGL<T> objStore = (MyMessageStoreFGL<T>) getActivity().getIntent().getSerializableExtra(MyMessageHandler.EXTRA_STORE);
+//				if(objStore==null){
+//					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): KEIN ObjektStore aus dem Intent der Activity erhalten.");						
+//				}else{
+//					this.setMessageStore(objStore);
+//												
+//					//Nun Versuch sie in inStop() über einen Intent.getExtras zu sichern und hier wiederherzustellen
+//					sMessageCurrent = objStore.getString(MyMessageHandler.RESUME_MESSAGE);
+//					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): Wert per intent (aus MessageStore) sMessageCurrent = " + sMessageCurrent);			
+//						
+//					if(!StringZZZ.isEmptyNull(sMessageCurrent)&& !StringZZZ.isBlank(sMessageCurrent) & !StringZZZ.isWhitespace(sMessageCurrent)){
+//						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): Wert per intent (aus MessageStore) ist gefüllt");	
+//						
+//						//DAS FUNKTIONIERT GGFS. AUCH NICHT!!!
+//						EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
+//						editText.setText(sMessageCurrent + MyMessageHandler.MESSAGE_ADDITION_INTENT);
+//					}else{
+//						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): Wert per intent (aus MessageStore) ist leer oder NULL.");			
+//						
+//						EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
+//						editText.setText("");
+//					}
+//				}
+//			}
 		}
+		
+		
+		//############################################################
+private void initButtons(){
+	Log.d("FGLSTATE", this.getClass().getSimpleName()+".initButtons(): START");
+	
+			//FGL 20161204: Wenn man die Events im Fragment selbst haben will,
+			//              muss man den Event-Handler am Button hier einbauen.
+			//              sonst gibt es Fehlermeldungen der Art:
+			//12-04 06:02:41.664: E/AndroidRuntime(1778): java.lang.IllegalStateException: Could not find method sendMessage(View) in a parent or ancestor Context for android:onClick attribute defined on view class android.support.v7.widget.AppCompatButton with id 'button_send'
+			//              Alternativ dazu die Methode in der Activity belassen, was meiner Meinung nach eine unschöne Lösung ist, wg. mangelnder Kapselung.
+
+	Button button_send_for_result = (Button) getActivity().findViewById(R.id.button_send_for_result);
+    Button button_send = (Button) getActivity().findViewById(R.id.button_send);
+    Button button_search = (Button) getActivity().findViewById(R.id.button_search_web);
+    Button button_add = (Button) getActivity().findViewById(R.id.button_add_search_list);
+    
+		//FGL 20161204: Das geht so nicht... zumindest in Fragments geht das nicht.
+		   /*button.setOnClickListener(new OnClickListener()
+		   {
+		             @Override
+		             public void onClick(View v)
+		             {
+		                // do something
+		             } 
+		   }); */
+			
+			//FGL 20161204: Alternativer Weg für den Listener, wenn das Fragment view.OnClickListener implementiert
+			if(button_send_for_result!=null) button_send_for_result.setOnClickListener(this);
+			if(button_send!=null) button_send.setOnClickListener(this);
+			if(button_search!=null) button_search.setOnClickListener(this);
+			if(button_add!=null)button_add.setOnClickListener(this);
+		}
+
+private void initValueDriven(MyMessageStoreFGL objStore){
+	Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): START.");
+	if(objStore==null){
+		Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): Kein objStore.");
+		
+	}else{
+		Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): ObjStore vorhanden.");
+		
+	}//end if objStore == null
+}
+		
 		
 		/* (non-Javadoc)
 		 * @see android.app.Activity#onActivityResult(int, int, android.content.Intent)
@@ -831,6 +877,19 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 										
 					//Lösche nun den übergebenen Text aus dem Eingabefeld
 					editText.setText("");
+					
+					//Mache die Buttons sichtbar, die für die Arbeit mit der Liste gedacht sind
+					Button b1 = (Button) getActivity().findViewById(R.id.button_search_web_from_list);
+					if(b1!=null){ 
+						b1.setVisibility(View.VISIBLE);
+						b1.setEnabled(true);
+					}
+					
+					Button b2 = (Button) getActivity().findViewById(R.id.button_remove_from_list);
+					if(b2!=null) {
+						b2.setVisibility(View.VISIBLE);
+						b2.setEnabled(true);
+					}
 				}
 			}//end if editText!=null
 		}
@@ -940,6 +999,8 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 			}
 		}
 		
+		
+		
 		private ArrayAdapter<String> arrayAdapter;
 		private void setArrayAdapter(ArrayAdapter<String> adapter){
 			this.arrayAdapter=adapter;
@@ -1010,29 +1071,8 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView(): START.");
 			View rootView = inflater.inflate(R.layout.fragment_main_list, container, false);
 			
-			//###########################################################
-			//FGL 20161204: Wenn man die Events im Fragment selbst haben will,
-			//              muss man den Event-Handler am Button hier einbauen.
-			//              sonst gibt es Fehlermeldungen der Art:
-			//12-04 06:02:41.664: E/AndroidRuntime(1778): java.lang.IllegalStateException: Could not find method sendMessage(View) in a parent or ancestor Context for android:onClick attribute defined on view class android.support.v7.widget.AppCompatButton with id 'button_send'
-			//              Alternativ dazu die Methode in der Activity belassen, was meiner Meinung nach eine unschöne Lösung ist, wg. mangelnder Kapselung.
-			Button button_removeFromList = (Button) rootView.findViewById(R.id.button_remove_from_list);
-		    Button button_searchFromList = (Button) rootView.findViewById(R.id.button_search_web_from_list);
-		    
-			//FGL 20161204: Das geht so nicht... zumindest in Fragments geht das nicht.
-		   /*button.setOnClickListener(new OnClickListener()
-		   {
-		             @Override
-		             public void onClick(View v)
-		             {
-		                // do something
-		             } 
-		   }); */
-			
-			//FGL 20161204: Alternativer Weg für den Listener, wenn das Fragment view.OnClickListener implementiert
-			button_removeFromList.setOnClickListener(this);		
-			button_searchFromList.setOnClickListener(this);
-			
+			//Binde künstlich hergeholte Events an die Buttons
+			initButtons();
 			
 			//#####################################################
 			//Hier, versuche die ListView zu füllen
@@ -1161,6 +1201,11 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 		public void onActivityCreated(Bundle savedInstanceState){
 			super.onActivityCreated(savedInstanceState);	
 			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated(bundle) wurde aktiviert");
+			
+			//Damit die Events an den Buttons erhalten bleiben, wie im onCreate();			
+			initButtons();
+			
+			
 			if(savedInstanceState!=null){
 				MyMessageStoreFGL<T> objStore = (MyMessageStoreFGL<T>) savedInstanceState.getSerializable(MyMessageHandler.EXTRA_STORE);
 				if(objStore==null){
@@ -1213,24 +1258,18 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): START");
 			
 			//Versuche die gespeicherten Liste wiederherszustellen.
-			//Merke: Beim einfachen Wechseln zurück wird dann nicht onCreate() aufgerufen, sondern onResume(), 
+			//Merke: Beim einfachen Wechseln zurück (Gerätebutton) wird dann nicht onCreate() aufgerufen, sondern onResume(), 
 			//       darum gehört der Code hierher, ABER: savedInstanceState ist hier nicht vorhanden.
+			//       Wenn man auf den objStore zugreift, dann ist das alles einfacher.
 			
-			//Damit das funktioniert muss onRestoreInstanceState() ausgeführt werden und es muss die lokale Property wieder gefüllt worden sein.
-			MyMessageStoreFGL<T> objStore = (MyMessageStoreFGL<T>) getActivity().getIntent().getSerializableExtra(MyMessageHandler.EXTRA_STORE);
+			MyMessageStoreFGL<T> objStore = this.getMessageStore(); 												
 			if(objStore!=null){
-				this.setMessageStore(objStore);
-												
-				//Nun Versuch sie in inStop() über einen Intent.getExtras zu sichern und hier wiederherzustellen
-				ArrayList<String> listaCurrent = (ArrayList<String>) objStore.get(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT);
-				if(listaCurrent!=null){
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): Wert per intent (aus MessageStore) ArrrayList mit = '" + listaCurrent.size() + "' Elementen.");
-					this.setSearchElements(listaCurrent);
-				}else{
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): KEIN Wert per intent (aus MessageStore) ArrrayList.");
-				}							
+				initValueDriven(objStore);																					
 			}	
 		}
+		
+		
+		
 		
 		 /** Called when the user clicks the RemoveFromList button */
 		public void removeFromList(View view) {
@@ -1319,6 +1358,90 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 		    ((ViewGroup)listView.getParent()).addView(emptyView, 0);
 		    return emptyView;
 		}
+		
+		//###########################################################################
+				private void initButtons(){
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".initButtons(): START");
+							
+							//FGL 20161204: Wenn man die Events im Fragment selbst haben will,
+							//              muss man den Event-Handler am Button hier einbauen.
+							//              sonst gibt es Fehlermeldungen der Art:
+							//12-04 06:02:41.664: E/AndroidRuntime(1778): java.lang.IllegalStateException: Could not find method sendMessage(View) in a parent or ancestor Context for android:onClick attribute defined on view class android.support.v7.widget.AppCompatButton with id 'button_send'
+							//              Alternativ dazu die Methode in der Activity belassen, was meiner Meinung nach eine unschöne Lösung ist, wg. mangelnder Kapselung.
+							
+					Button button_removeFromList = (Button) getActivity().findViewById(R.id.button_remove_from_list);
+				    Button button_searchFromList = (Button) getActivity().findViewById(R.id.button_search_web_from_list);
+				    
+						//FGL 20161204: Das geht so nicht... zumindest in Fragments geht das nicht.
+						   /*button.setOnClickListener(new OnClickListener()
+						   {
+						             @Override
+						             public void onClick(View v)
+						             {
+						                // do something
+						             } 
+						   }); */
+						
+					//FGL 20161204: Alternativer Weg für den Listener, wenn das Fragment view.OnClickListener implementiert
+					if(button_removeFromList!=null) button_removeFromList.setOnClickListener(this);		
+					if(button_searchFromList!=null) button_searchFromList.setOnClickListener(this);
+
+				}
+				
+				private void initValueDriven(MyMessageStoreFGL objStore){
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): START.");
+					if(objStore==null){
+						Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): Kein ObjStore.");
+						
+					}else{
+						Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): ObjStore vorhanden.");
+						
+						//Blende nun ggfs. die verborgenen Buttons wieder ein.
+						ArrayList<String> listaTemp = objStore.getArrayList(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT);
+						if(listaTemp==null){
+							Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): objStore hat keine Arrayliste für die Suchelement gespeichert.");
+							
+							//Mache die Buttons unsichtbar, die für die Arbeit mit der Liste gedacht sind
+							Button b1 = (Button) getActivity().findViewById(R.id.button_search_web_from_list);
+							if(b1!=null) b1.setVisibility(View.INVISIBLE);//besser als gone ist invisible--- das mach transparent
+							
+							Button b2 = (Button) getActivity().findViewById(R.id.button_remove_from_list);
+							if(b2!=null) b2.setVisibility(View.INVISIBLE);//besser als gone ist invisible--- das mach transparent
+						}else{
+							if(listaTemp.size()==0){
+								Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): Arrayliste aus objStore ist leer.");
+								
+								//Mache die Buttons unsichtbar, die für die Arbeit mit der Liste gedacht sind
+								Button b1 = (Button) getActivity().findViewById(R.id.button_search_web_from_list);
+								if(b1!=null) b1.setVisibility(View.INVISIBLE);//besser als gone ist invisible--- das mach transparent
+								
+								Button b2 = (Button) getActivity().findViewById(R.id.button_remove_from_list);
+								if(b2!=null) b2.setVisibility(View.INVISIBLE);//besser als gone ist invisible--- das mach transparent
+							}else{
+								Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): Arrayliste aus objStore, Anzahl Elemente: '" + listaTemp.size() + "'");
+																
+								//Mache die Buttons sichtbar, die für die Arbeit mit der Liste gedacht sind
+								Button b1 = (Button) getActivity().findViewById(R.id.button_search_web_from_list);
+								if(b1!=null) {
+									Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): Button gefunden und aktiviert 'search web from list'");									
+									b1.setEnabled(true);
+									b1.setVisibility(View.VISIBLE);									
+								}else{
+									Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): Button NICHT gefunden und aktiviert 'search web from list'");
+								}
+								
+								Button b2 = (Button) getActivity().findViewById(R.id.button_remove_from_list);
+								if(b2!=null) {
+									Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): Button gefunden und aktiviert 'remove from list'");
+									b2.setEnabled(true);
+									b2.setVisibility(View.VISIBLE);								
+								}else{
+									Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): Button NICHT gefunden und aktiviert 'remove from list'");
+								}
+							}
+						}
+					}//end if objStore == null
+				}
 				
 		private void initialisiereListTestElemente(){
 			String[] saTest = {"eins","zwei","drei","vier","fünf"};
