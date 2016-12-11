@@ -21,17 +21,6 @@ import android.widget.TextView;
 //Lösung:
 //AppCompatActivity wird über die SupportBibiothek (V7) eingebunden.
 public class DisplayMessageActivityForResult<T> extends AppCompatActivity {		
-	private String sMessageCurrent=null;
-	private void setMessageCurrent(String message) {
-		this.sMessageCurrent= message;
-		Log.d("FGLSTATE", this.getClass().getSimpleName()+". setMessageCurrent() für '" + message + "'");	
-	}
-	private String getMessageCurrent(){		
-		if(this.sMessageCurrent==null) this.sMessageCurrent=new String("");
-		Log.d("FGLSTATE", this.getClass().getSimpleName()+". getMessageCurrent() für '" + this.sMessageCurrent + "'");
-		return this.sMessageCurrent;		
-	}
-	
 	private MyMessageStoreFGL<T> objStore=null;
 	private void setMessageStore(MyMessageStoreFGL<T> objStore){
 		this.objStore = objStore;
@@ -43,6 +32,22 @@ public class DisplayMessageActivityForResult<T> extends AppCompatActivity {
 		return this.objStore;
 	}
 	
+	private void setMessageCurrent(String message) {
+		Log.d("FGLSTATE", this.getClass().getSimpleName()+".setMessageCurrent() für '" + message + "'");
+		MyMessageStoreFGL<T>objStore= this.getMessageStore();
+		if(objStore!=null){
+			objStore.put(MyMessageHandler.RESUME_MESSAGE, message);
+		}						
+	}
+	private String getMessageCurrent(){
+		String sReturn=new String("");
+		MyMessageStoreFGL<T>objStore= this.getMessageStore();
+		if(objStore!=null){
+			sReturn=objStore.getString(MyMessageHandler.RESUME_MESSAGE);
+		}			
+		return sReturn;			
+	}
+	
 	
 	@SuppressWarnings("unchecked")
 	@Override
@@ -52,14 +57,29 @@ public class DisplayMessageActivityForResult<T> extends AppCompatActivity {
 		
 		
 		//###############################################################
-		//++++++++++++++++++++++++++++++++++++++++++++++
+			   
+			if (savedInstanceState != null) {
+				Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onCreate(..) - savedInstanceState vorhanden.");
+				
+				//Hole den ObjektStore wieder zurück
+				MyMessageStoreFGL<T>objStore = (MyMessageStoreFGL<T>) savedInstanceState.getSerializable(MyMessageHandler.EXTRA_STORE);
+				if(objStore==null){
+					Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onCreate(..) - Kein StoreObjekt vorhanden.");				
+				}else{
+					Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onCreate(..) - StoreObjekt vorhanden.");
+					this.setMessageStore(objStore);
+					
+					//Das reicht noch nicht, es muss auch der Text geholt und neu gesetzt werden.
+					initValueDriven(objStore);
+				}
+				
+			}else{
+				Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onCreate(..) - Kein savedInstanceState vorhanden.");
+					
+				//++++++++++++++++++++++++++++++++++++++++++++++
 				// Get the message from the intent
 				Intent intent = getIntent();
-				
-				//FGL 20161125: Statt den String direkt zu übernehmen jetzt ein StoreObjekt verwenden, in dem auch Werte enthalten sind,
-				//                     die ggfs. nur zwischengespeichert wurden, um sie an eine andere Activity weiter/wieder zurückzugeben.
-				//String message = intent.getStringExtra(MyMessageHandler.EXTRA_MESSAGE);
-											
+
 				// Get the Message from the StoreObject, stored in the intent.
 				MyMessageStoreFGL<T> objStore = (MyMessageStoreFGL<T>) intent.getSerializableExtra(MyMessageHandler.EXTRA_STORE);
 				if(objStore==null){
@@ -67,14 +87,10 @@ public class DisplayMessageActivityForResult<T> extends AppCompatActivity {
 				}else{
 					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreate(..) - StoreObject FOUND.");
 					this.setMessageStore(objStore);
-					String sMessage = this.getMessageStore().getString(MyMessageHandler.RESUME_MESSAGE);
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreate(..) - String from StoreObject = '"+sMessage + "'");
-										
-					this.setMessageCurrent(sMessage);
-				}
 				
-				
-			
+					//zentrale Stelle aufrufen, um das UI zu füllen
+					initValueDriven(objStore);
+					
 				//++++++++++++++++++++++++++++++++++++++++++++++
 				int iColor;
 				String alarmMessagePrefix = "Alarm";
@@ -111,28 +127,50 @@ public class DisplayMessageActivityForResult<T> extends AppCompatActivity {
 						actionBar.setBackgroundDrawable(new ColorDrawable(iColor)); // set your desired color
 					}		
 				}
-					
 				
-				// Create the text view
-			    TextView textView = new TextView(this);
-			    textView.setTextSize(40);
-			    textView.setText(this.getMessageCurrent());
-
-			    // Set the text view as the activity layout
-			    setContentView(textView);
-
-			    //FGL: Wenn man die View im Layout-Editor erstellt, kann man eine ID vergeben, die hier benutzt werden kann. 
-			    //Initialize member TextView so we can manipulate it later
-			    //mTextView = (TextView) findViewById(R.id.text_message);
-				//setContentView(R.layout.activity_display_message);
-
-				if (savedInstanceState == null) {
-//					getSupportFragmentManager().beginTransaction()
-//							.add(R.id.container, new PlaceholderFragment()).commit();
+				
 				}
-		
-		
+			}//end if savedInstanceStae!= null
 	}
+	
+	
+	public void onSaveInstanceState(Bundle outState){			
+		//NOTWENDIG ZUM ERHALTEN DER DATEN IM BUNDLE, WENN DAS GERÄT GEDREHT WIRD
+		//Merke: Bei Fragments gibt es keine onRestoreInstanceState()-Methode. Hole das Bundle in onActivityCreated ab.
+					
+		//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Gerät verbunden sein.
+				//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
+				//            und Eclipse neu starten muss.
+		Log.d("FGLSTATE", this.getClass().getSimpleName()+".onSaveInstanceState() wurde aktiviert");
+					
+		//TODO FGL 20161203: Ändere das auf den MessageObjectStore ab
+		MyMessageStoreFGL<T>objStore = this.getMessageStore();
+		if(objStore==null){
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onSaveInstanceState() - Kein StoreObjekt gefunden.");
+		}else{
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onSaveInstanceState() - StoreObjekt gefunden. Sichere es im Bundle weg.");
+			outState.putSerializable(MyMessageHandler.EXTRA_STORE, objStore);
+		}
+		
+		//FGL: Rufe beim Überschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.					
+		super.onSaveInstanceState(outState);								
+	}
+	
+	public void onResume(){
+		super.onResume();
+		Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): START");
+		
+		//Versuche die gespeicherten Werte wiederherszustellen.
+		//Merke: Beim einfachen Wechseln zurück (Gerätebutton) wird dann nicht onCreate() aufgerufen, sondern onResume(), 
+		//       darum gehört der Code hierher, ABER: savedInstanceState ist hier nicht vorhanden.
+		//       Wenn man auf den objStore zugreift, dann ist das alles einfacher.
+		
+		MyMessageStoreFGL<T> objStore = this.getMessageStore(); 												
+		if(objStore!=null){
+			initValueDriven(objStore);																					
+		}	
+	}
+	
 	
 	//FGL für neue Buttons in der Action Bar notwendig
 		@Override
@@ -212,8 +250,9 @@ public class DisplayMessageActivityForResult<T> extends AppCompatActivity {
 			    switch (id) {
 			    	case R.id.action_end:
 			    		Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() für FINISH item.id= '" + id + "'");
-						//finish(); //Aber: Beendet nur diese Activity, nicht aber die Start Activity
-						finishAffinity(); //Beendet auch alle "Parent Activities", Ab Android 4.1.		
+//						//finish(); //Aber: Beendet nur diese Activity, nicht aber die Start Activity
+//						finishAffinity(); //Beendet auch alle "Parent Activities", Ab Android 4.1.		
+			    		finishIt();
 						return true;
 			        case R.id.action_search:
 			        	Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() für ACTION_SEARCH item.id= '" + id + "'");
@@ -252,41 +291,31 @@ public class DisplayMessageActivityForResult<T> extends AppCompatActivity {
 			// TODO Auto-generated method stub
 			
 		}
-	
-	
-	public void finish() {
-//	    if (mParent == null) {
-//	        int resultCode;
-//	        Intent resultData;
-//	        synchronized (this) {
-//	            resultCode = mResultCode;
-//	            resultData = mResultData;
-//	        }
-//	        if (Config.LOGV) Log.v(TAG, "Finishing self: token=" + mToken);
-//	        try {
-//	            if (ActivityManagerNative.getDefault()
-//	                .finishActivity(mToken, resultCode, resultData)) {
-//	                mFinished = true;
-//	            }
-//	        } catch (RemoteException e) {
-//	            // Empty
-//	        }
-//	    } else {
-//	        mParent.finishFromChild(this);
-//	    }
+			
 		
-		
-		//FGL 20161206: IST DAS WICHTIG ???? Es wird doch nun alles im objectStore gemacht.
-//		Log.d("FGLSTATE", this.getClass().getSimpleName()+". im finish()");
-//		
-//		String message = this.getMessageCurrent() + " (als Result)";
-//		Intent data = new Intent();
-//		data.putExtra(MyMessageHandler.EXTRA_MESSAGE, message);
-//		setResult(Activity.RESULT_OK, data);
-//		
-		//Wichtig: Erst den Intent bauen und dann erst finish() der Elternklasse aufrufen.
-		super.finish();
+	private void finishIt() {	
+		finishAffinity(); //Beendet auch alle "Parent Activities", Ab Android 4.1.
 	}
 		
+	
+	private void initValueDriven(MyMessageStoreFGL<T> objStore){
+		Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): START.");
+		if(objStore==null){
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): Kein ObjStore.");
+			
+		}else{
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): ObjStore vorhanden.");
+			
+			 //FGL: Wenn man die View im Layout-Editor erstellt hätte, kann man eine ID vergeben, die hier benutzt werden könnte.
+			// Create the text view
+		    TextView textView = new TextView(this);
+		    textView.setTextSize(40);
+		    textView.setText(this.getMessageCurrent());
+
+		    // Set the text view as the activity layout
+		    setContentView(textView);
+
+		}//end if objStore == null
+	}
 	
 }

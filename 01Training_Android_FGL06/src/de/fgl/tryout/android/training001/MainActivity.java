@@ -89,26 +89,26 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 	}
 	
 	//#############################################
-	private void setMessageCurrent(String message) {
-		Log.d("FGLSTATE", this.getClass().getSimpleName()+". setMessageCurrent() für '" + message + "'");
-		MyMessageStoreFGL<T> objStore = this.getMessageStore();
-		if(objStore!=null){
-			objStore.put(message, MyMessageHandler.RESUME_MESSAGE);
-		}else{
-			Log.d("FGLSTATE", this.getClass().getSimpleName()+". setMessageCurrent() findet kein Store Objekt.");
-		}					
-	}
-	private String getMessageCurrent(){					
-		Log.d("FGLSTATE", this.getClass().getSimpleName()+". getMessageCurrent() gestartet.");
-		String sReturn = new String("");
-		MyMessageStoreFGL<T> objStore = this.getMessageStore();
-		if(objStore!=null){
-			sReturn = objStore.getString(MyMessageHandler.RESUME_MESSAGE);
-		}else{
-			Log.d("FGLSTATE", this.getClass().getSimpleName()+". getMessageCurrent() findet kein Store Objekt.");
-		}
-		return sReturn;
-	}
+//	private void setMessageCurrent(String message) {
+//		Log.d("FGLSTATE", this.getClass().getSimpleName()+". setMessageCurrent() für '" + message + "'");
+//		MyMessageStoreFGL<T> objStore = this.getMessageStore();
+//		if(objStore!=null){
+//			objStore.put(message, MyMessageHandler.RESUME_MESSAGE);
+//		}else{
+//			Log.d("FGLSTATE", this.getClass().getSimpleName()+". setMessageCurrent() findet kein Store Objekt.");
+//		}					
+//	}
+//	private String getMessageCurrent(){					
+//		Log.d("FGLSTATE", this.getClass().getSimpleName()+". getMessageCurrent() gestartet.");
+//		String sReturn = new String("");
+//		MyMessageStoreFGL<T> objStore = this.getMessageStore();
+//		if(objStore!=null){
+//			sReturn = objStore.getString(MyMessageHandler.RESUME_MESSAGE);
+//		}else{
+//			Log.d("FGLSTATE", this.getClass().getSimpleName()+". getMessageCurrent() findet kein Store Objekt.");
+//		}
+//		return sReturn;
+//	}
 	
 
 	
@@ -197,7 +197,7 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 		Log.d("FGLSTATE", "onOptionsItemSelected() id='"+id+"'.");
 		
 		if (id == R.id.action_end) {
-			finish();			
+			finishIt();			
 		}
 		
 		if (id == R.id.action_settings) {
@@ -229,16 +229,10 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 		return super.onOptionsItemSelected(item);
 	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
+	private void finishIt() {	
+		finishAffinity(); //Beendet auch alle "Parent Activities", Ab Android 4.1.
+	}
+		
 	/* (non-Javadoc)
 	 * @see android.support.v4.app.FragmentActivity#onPause()
 	 * 
@@ -282,204 +276,100 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 	 * 14.07.2016 08:06:14 Fritz Lindhauer
 	 */
 	@SuppressWarnings("unchecked")
-	public void onResume(){
-		//super.onResume();
-		//FGL: Rufe beim Überschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
-				
+	public void onResume(){						
 		//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Gerät verbunden sein.
 		//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
 		//            und Eclipse neu starten muss.
 		Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume() wurde aktiviert");
-		String sMessage=new String("");
-				
-//		//Versuche einen gespeicherten Text wiederherszustellen.
-//		//Merke: Beim einfachen Wechseln zurück wird dann nicht onCreate() aufgerufen, sondern onResume(), 
-//		//       darum gehört der Code hierher, ABER: savedInstanceState ist hier nicht vorhanden.
-//		
-//		//Damit das funktioniert muss onRestoreInstanceState() ausgeführt werden und es muss die lokale Property wieder gefüllt worden sein.
-		String sMessageCurrent = this.getMessageCurrent();
-		Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): Wert per Variable sMessageCurrent = " + sMessageCurrent);
-//		
-		if(!StringZZZ.isEmptyNull(sMessageCurrent)&& !StringZZZ.isBlank(sMessageCurrent) & !StringZZZ.isWhitespace(sMessageCurrent)){
-//			//1. Variante: Als Variable
-			sMessage = sMessageCurrent + MyMessageHandler.MESSAGE_ADDITION_VARIABLE;			
+		
+		Intent intent = getIntent();
+		if(intent==null){ //Verhindere einen Fehler, wenn die Activity ohne Intent gestartet wird. Z.B. von der Oberfläche
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(..) - Intent IS NULL.");
 		}else{
-//			//2. Variante: Hole den Wert aus dem MessageStore, der zwischen den Activities ausgetauscht wird.
-//			//             Das ist der Normalefall: Die Variable ist nämlich normalerweise weg.
-			Intent intent = getIntent();
-			if(intent==null){ //Verhindere einen Fehler, wenn die Activity ohne Intent gestartet wird. Z.B. von der Oberfläche
-				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(..) - Intent IS NULL.");
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(..) - Intent UNGLEICH NULL.");
+		
+			//FGL 20161125: Statt den String direkt zu übernehmen jetzt ein StoreObjekt verwenden, in dem auch Werte enthalten sind,
+			//                		die ggfs. nur zwischengespeichert wurden, um sie an eine andere Activity weiter/wieder zurückzugeben.
+								
+			// Get the Message from the StoreObject, stored in the intent.
+			MyMessageStoreFGL<T> objStore = (MyMessageStoreFGL<T>) intent.getSerializableExtra(MyMessageHandler.EXTRA_STORE);			
+			if(objStore==null){
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(..) - StoreObject IS NULL.");
 			}else{
-				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(..) - Intent UNGLEICH NULL.");
-			
-				//FGL 20161125: Statt den String direkt zu übernehmen jetzt ein StoreObjekt verwenden, in dem auch Werte enthalten sind,
-				//                		die ggfs. nur zwischengespeichert wurden, um sie an eine andere Activity weiter/wieder zurückzugeben.
-									
-				// Get the Message from the StoreObject, stored in the intent.
-				MyMessageStoreFGL<T> objStore = (MyMessageStoreFGL<T>) intent.getSerializableExtra(MyMessageHandler.EXTRA_STORE);
-				Bundle objBundle=null;
-				//Bundle objBundle = intent.getExtras();
-				//Bundle objBundle = intent.getBundleExtra(MyMessageHandler.EXTRA_STORE);			
-				if(objBundle==null){
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(..) - BundleObject IS NULL.");
-					objStore = (MyMessageStoreFGL<T>) intent.getSerializableExtra(MyMessageHandler.EXTRA_STORE);
-				}else{
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(..) - BundleObject UNGLEICH NULL.");
-					objStore = (MyMessageStoreFGL<T>) objBundle.getSerializable(MyMessageHandler.EXTRA_STORE);
-				} //objBundle==null
-				
-				String sMessageTest = intent.getStringExtra(MyMessageHandler.RESUME_MESSAGE);
-				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(..) - String from intent.getStringExtra = '"+sMessageTest + "'");
-				sMessage=sMessageTest;
-				
-				
-			
-				if(objStore==null){
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(..) - StoreObject IS NULL.");
-					
-					
-				}else{
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(..) - StoreObject FOUND.");
-					this.setMessageStore(objStore);
-					sMessage = this.getMessageStore().getString(MyMessageHandler.RESUME_MESSAGE);
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(..) - String from StoreObject = '"+sMessage + "'");															
-				}
-		//	}//end if objBundle==null
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(..) - StoreObject FOUND.");
+				this.setMessageStore(objStore);															
+			}
 		}//getIntent==null
 			
-			
-			
-//			MyMessageStoreFGL<T> objStore = (MyMessageStoreFGL<T>) getIntent().getSerializableExtra(MyMessageHandler.EXTRA_STORE);
-//			if(objStore!=null){
-//				this.setMessageStore(objStore);
-//											
-//				//Nun Versuch sie in inStop() über einen Intent.getExtras zu sichern und hier wiederherzustellen
-//				sMessageCurrent = objStore.getString(MyMessageHandler.RESUME_MESSAGE);
-//				Log.d("FGLSTATE", "onResume(): Wert per intent (aus MessageStore) sMessageCurrent = " + sMessageCurrent);			
-//					
-//				if(!StringZZZ.isEmptyNull(sMessageCurrent)&& !StringZZZ.isBlank(sMessageCurrent) & !StringZZZ.isWhitespace(sMessageCurrent)){
-//					//DAS FUNKTIONIERT GGFS. AUCH NICHT!!!
-//					EditText editText = (EditText) findViewById(R.id.edit_message);
-//					editText.setText(sMessageCurrent + MyMessageHandler.MESSAGE_ADDITION_INTENT);
-//				}else{
-//					Log.d("FGLSTATE", "onResume(): Wert per intent (aus MessageStore) ist leer oder NULL.");			
-//					
-//					EditText editText = (EditText) findViewById(R.id.edit_message);
-//					editText.setText("");
-//				}
-//			}
-//		}
-		}//sMessageCurrent istempty
-		
-		
-		EditText editText = (EditText) findViewById(R.id.edit_message);
-		editText.setText(sMessage);	
+		//FGL: Rufe beim Überschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
 		super.onResume();
 	}
 	
 	public void onStop(){
-		//super.onStop();
-		//FGL: Rufe beim Überschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
-		
 		//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Gerät verbunden sein.
 				//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
 				//            und Eclipse neu starten muss.
 		Log.d("FGLSTATE", this.getClass().getSimpleName()+".onStop() wurde aktiviert");
-				
-		//Merke: objStore nur in den Fragments	
-		//Versuche den Stringwert zu retten, der dann in onResume() ausgelesen werden soll.
-		//Nutze dafür den objektMessageStore
-//		EditText editText = (EditText) findViewById(R.id.edit_message);
-//		String message = editText.getText().toString();			
-//		Log.d("FGLSTATE", "onStop() - Sicher Message in intent weg: " + message);
-//		
-//		//Suchstring
-//		MyMessageStoreFGL<T> objStore = this.getMessageStore();
-//		objStore.put(MyMessageHandler.RESUME_MESSAGE, message);
-//		
-//		//Arraylist (für Suchelementliste)
-//        ArrayList<String>listaTemp=new ArrayList<String>();
-//        listaTemp.add("TEST01");
-//		objStore.put(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT, listaTemp);
-//		
-//		//Das Message Store Objekt wieder in den Intent schreiben.
-//		getIntent().putExtra(MyMessageHandler.EXTRA_STORE, objStore);
-//		//intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//	
+
+		//FGL: Rufe beim Überschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.		
         super.onStop();
 	}
 	
-	public void onRestart(){
-		super.onRestart();
-		//FGL: Rufe beim Überschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
-		
+	public void onRestart(){				
 		//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Gerät verbunden sein.
 				//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
 				//            und Eclipse neu starten muss.
 		Log.d("FGLSTATE", this.getClass().getSimpleName()+".onRestart() wurde aktiviert");
+		
+		//FGL: Rufe beim Überschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
+		super.onRestart();
 	}
 	
 	public void onStart(){
-		super.onStart();
-		//FGL: Rufe beim Überschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
-		
 		//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Gerät verbunden sein.
 				//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
 				//            und Eclipse neu starten muss.
 		Log.d("FGLSTATE", this.getClass().getSimpleName()+".onStart() wurde aktiviert");
+		
+		//FGL: Rufe beim Überschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
+		super.onStart();
 	}
 	
 	public void onSaveInstanceState(Bundle outState){
-		super.onSaveInstanceState(outState);
-		//NOTWENDIG ZUM PERSISTIERN DER DATEN IM BUNDLE
-		//FGL: Rufe beim Überschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
-		
+		//NOTWENDIG ZUM ZWISCHENSPEICHERN DER DATEN IM BUNDLE
+
 		//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Gerät verbunden sein.
 				//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
 				//            und Eclipse neu starten muss.
 		Log.d("FGLSTATE", this.getClass().getSimpleName()+".onSaveInstanceState() wurde aktiviert");
-		
-		//TODO FGL GOON 20161203 Das ebenfalls auf den MessageObjectStore abändern.
-		//GRUND: SERIALIZIERUNG geht nur mit expliziter Klasse, ggf. reicht auch hier ein "dreckiger" Typecast
-		//String sMessage = this.getMessageCurrent();
-		//outState.putSerializable(MyMessageHandler.KEY_MESSAGE_CURRENT, sMessage); //liste darf nicht das Interface sein, sondern muss explizit die Klasse ArrayList sein.
-		
-		//20161128: FGL06 - nun auch die Fragments speichern
+				
+		//20161128: FGL06 - nun auch die Fragments speichern, funktioniert das überhaupt???
 		//Save the fragment's instance
 	    getSupportFragmentManager().putFragment(outState, "fragmentMain", this.fragmentMain);
-	    getSupportFragmentManager().putFragment(outState, "fragmentList", this.fragmentList);							
+	    getSupportFragmentManager().putFragment(outState, "fragmentList", this.fragmentList);
+	    
+		//FGL: Rufe beim Überschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
+		super.onSaveInstanceState(outState);
 	}
 	
 	@Override
 	public void onRestoreInstanceState(Bundle inState){
-		super.onRestoreInstanceState(inState);
-		//NOTWENDIG ZUM ZURUECKHOLEN DER PERSISTIERTEN DATEN AUS DEM BUNDEL. 
+		//NOTWENDIG ZUM ZURUECKHOLEN DER ZWISCHENGESPEICHERTEN DATEN AUS DEM BUNDEL. 
 		//WIRD ABER NUR BEI onCreate() aufgerufen
-		
-		//Merke onResume() oder onStart() haben kein Bundle als Parameter
-		//Bei onResume() ... WIE KANN MAN DA DIE DATEN ZURUECKHOLEN?????
-		//super.onRestoreInstanceState(inState);
-		//FGL: Rufe beim Überschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
 		
 		//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Gerät verbunden sein.
 				//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
 				//            und Eclipse neu starten muss.
-				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onRestoreInstanceState() wurde aktiviert");
+		Log.d("FGLSTATE", this.getClass().getSimpleName()+".onRestoreInstanceState() wurde aktiviert");
 		
-		
-		//GRUND: SERIALIZIERUNG geht nur mit expliziter Klasse, ggf. reicht auch hier ein "dreckiger" Typecast		
-//		String sMessage = (String) inState.get(MyMessageHandler.KEY_MESSAGE_CURRENT);
-//		Log.d("FGLSTATE", "onRestoreInstanceState() mit sMessage="+sMessage);
-//		this.setMessageCurrent(sMessage);	
-		
-		//20161128: FGL06 - nun auch die Fragments speichern
+		//20161128: FGL06 - nun auch die Fragments speichern, bzw. hier zurückholen
 		//load the fragment's instance
+		//TODO 20161211: Klappt das irgendwie???
 		this.fragmentMain = (PlaceholderFragmentMain) getSupportFragmentManager().getFragment(inState, "fragmentMain");
 		this.fragmentList = (PlaceholderFragmentList) getSupportFragmentManager().getFragment(inState, "fragmentList");
-				
 		
-		//klappst so nicht, versuche die Methode der Elternklasse danach aufzurufen.
-		//super.onRestoreInstanceState(inState);
+		//FGL: Rufe beim Überschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
+		super.onRestoreInstanceState(inState);
 	}
 	
 	
@@ -492,24 +382,13 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 	 *          Damit dann die onClick Methode vorhanden ist, muss View.OnClickListern implementiert werden.
 	 */
 	public static class PlaceholderFragmentMain<T> extends Fragment implements OnClickListener{
-		/* MERKE: objStore Objekt, muss auf Activity-Ebene sein. Ansonsten geht es beim Start einer anderen Activity verloren
-		private MyMessageStoreFGL<T> objStore=null;
+		/* MERKE: objStore Objekt, darf nur auf Activity-Ebene sein. Ansonsten geht es beim Start einer anderen Activity verloren */		
 		private void setMessageStore(MyMessageStoreFGL<T> objStore){
-			this.objStore = objStore;
-		}
-		private MyMessageStoreFGL<T> getMessageStore(){
-			if(this.objStore==null){
-				this.objStore = new MyMessageStoreFGL<T>();
-			}
-			return this.objStore;
-		}
-		*/
-		private void setMessageStore(MyMessageStoreFGL<T> objStore){
-			MainActivity objActivityParent = (MainActivity)this.getActivity();
+			MainActivity<T> objActivityParent = (MainActivity<T>)this.getActivity();
 			objActivityParent.setMessageStore(objStore);
 		}
 		private MyMessageStoreFGL<T> getMessageStore(){
-			MainActivity objActivityParent = (MainActivity)this.getActivity();
+			MainActivity<T> objActivityParent = (MainActivity<T>)this.getActivity();
 			return objActivityParent.getMessageStore();
 		}
 
@@ -592,10 +471,7 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 					// Get the message from the intent
 					Intent intent = getActivity().getIntent();
 					
-					//FGL 20161125: Statt den String direkt zu übernehmen jetzt ein StoreObjekt verwenden, in dem auch Werte enthalten sind,
-					//                     die ggfs. nur zwischengespeichert wurden, um sie an eine andere Activity weiter/wieder zurückzugeben.
-					//String message = intent.getStringExtra(MyMessageHandler.EXTRA_MESSAGE);
-												
+					//FGL 20161125: Statt den String direkt zu übernehmen jetzt ein StoreObjekt verwenden, in dem auch Werte enthalten sind,											
 					// Get the Message from the StoreObject, stored in the intent.
 					MyMessageStoreFGL<T> objStore = (MyMessageStoreFGL<T>) intent.getSerializableExtra(MyMessageHandler.EXTRA_STORE);					
 					if(objStore==null){
@@ -603,10 +479,10 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 					}else{
 						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreate(..) - StoreObject FOUND.");
 						this.setMessageStore(objStore);
-						String sMessage = this.getMessageStore().getString(MyMessageHandler.RESUME_MESSAGE);
-						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreate(..) - String from StoreObject = '"+sMessage + "'");
+//						String sMessage = this.getMessageStore().getString(MyMessageHandler.RESUME_MESSAGE);
+//						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreate(..) - String from StoreObject = '"+sMessage + "'");
 											
-						this.setMessageCurrent(sMessage);
+//						this.setMessageCurrent(sMessage);
 					}
 	        
 	    }//end onCreate()
@@ -619,12 +495,12 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 			//Damit die Events an den Buttons erhalten bleiben, wie im onCreate();			
 			initButtons();
 			
-			//
+			//Arbeite nun ggfs. mit den erhaltenen Daten weiter
 			if(savedInstanceState!=null){
 				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated(bundle)SAVEDINSTANCESTATE IST NICHT NULL");
 				
 				//Greife auf den objectStore der activity zu.
-				MyMessageStoreFGL objStore = ((MainActivity<T>)getActivity()).getMessageStore();
+				MyMessageStoreFGL<T> objStore = ((MainActivity<T>)getActivity()).getMessageStore();
 				if(objStore==null){
 					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated(): objStore ist null");
 				}else{
@@ -633,70 +509,8 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 					//Blende nun ggfs. die verborgenen Buttons wieder ein.
 					initValueDriven(objStore);	
 				}
-				
-				//TODO: 20161204 Ändere das auf den Objekt MessageStore ab. 				
-				//Notwendiger Zweig um Persistierung zurückzuholen. Siehe auch onResume().
-	        	//String sMessageCurrent = (String) savedInstanceState.getSerializable(MyMessageHandler.KEY_MESSAGE_CURRENT);
-				
-//FGL 20161209: Ist das noch notwendig???				
-//				MyMessageStoreFGL objStore = (MyMessageStoreFGL) savedInstanceState.getSerializable(MyMessageHandler.EXTRA_STORE);
-//				if(objStore==null){
-//					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated(): objStore ist null");
-//				}else{
-//					String sMessageCurrent = objStore.getString(MyMessageHandler.RESUME_MESSAGE);
-//					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated(): sMessageCurrent = " + sMessageCurrent);
-//				
-//	        	if(!StringZZZ.isEmptyNull(sMessageCurrent)&& !StringZZZ.isBlank(sMessageCurrent) & !StringZZZ.isWhitespace(sMessageCurrent)){
-//		        	this.setMessageCurrent(sMessageCurrent);
-//		        	
-//		        	//Sollte man nun irgendwie den String zurück-/einsetzen?
-//		        	EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
-//		        	if(editText==null){
-//		        		Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated(): EditText - Element im UI nicht gefunden.");	    			
-//		        	}else{
-//		        		editText.setText(sMessageCurrent + " (wiederhergestellt)");
-//		        	}
-//	        	}   
-//				}//if objStore!=null
-			
 			}else{
-				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated(bundle)SAVEDINSTANCESTATE IST NULL");
-				
-				//Versuche einen gespeicherten Text wiederherszustellen.
-//				//Merke: Beim einfachen Wechseln zurück wird dann nicht onCreate() aufgerufen, sondern onResume(), 
-//				//       darum gehört der Code hierher, ABER: savedInstanceState ist hier nicht vorhanden.
-//				
-//				//Damit das funktioniert muss onRestoreInstanceState() ausgeführt werden und es muss die lokale Property wieder gefüllt worden sein.
-//				String sMessageCurrent = this.getMessageCurrent();
-//				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): Wert per Variable sMessageCurrent = " + sMessageCurrent);
-//			
-//				if(!StringZZZ.isEmptyNull(sMessageCurrent)&& !StringZZZ.isBlank(sMessageCurrent) & !StringZZZ.isWhitespace(sMessageCurrent)){
-//					//1. Variante: Als Variable
-//					EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
-//					editText.setText(sMessageCurrent + MyMessageHandler.MESSAGE_ADDITION_VARIABLE);			
-//				}else{
-//					//2. Variante: Hole den Wert aus dem MessageStore, der zwischen den Activities ausgetauscht wird.
-//					//             Das ist der Normalefall: Die Variable ist nämlich normalerweise weg.
-//					MyMessageStoreFGL<T> objStore = (MyMessageStoreFGL<T>) getActivity().getIntent().getSerializableExtra(MyMessageHandler.EXTRA_STORE);
-//					if(objStore!=null){
-//						this.setMessageStore(objStore);
-//													
-//						//Nun Versuch sie in inStop() über einen Intent.getExtras zu sichern und hier wiederherzustellen
-//						sMessageCurrent = objStore.getString(MyMessageHandler.RESUME_MESSAGE);
-//						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): Wert per intent (aus MessageStore) sMessageCurrent = " + sMessageCurrent);			
-//							
-//						if(!StringZZZ.isEmptyNull(sMessageCurrent)&& !StringZZZ.isBlank(sMessageCurrent) & !StringZZZ.isWhitespace(sMessageCurrent)){
-//							//DAS FUNKTIONIERT GGFS. AUCH NICHT!!!
-//							EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
-//							editText.setText(sMessageCurrent + MyMessageHandler.MESSAGE_ADDITION_INTENT);
-//						}else{
-//							Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): Wert per intent (aus MessageStore) ist leer oder NULL.");			
-//							
-//							EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
-//							editText.setText("");
-//						}
-//					}
-//				}				
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated(bundle)SAVEDINSTANCESTATE IST NULL");							
 			}
 		}
 		
@@ -718,36 +532,7 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 				//Wiederherstellen als Variable aus dem StoreObjekt.
 				EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
 				editText.setText(sMessageCurrent + MyMessageHandler.MESSAGE_ADDITION_VARIABLE);			
-			}
-			
-			//20161209: Braucht man das nach der Umstellung auf objStore noch???
-//			else{
-//				//2. Variante: Hole den Wert aus dem MessageStore, der zwischen den Activities ausgetauscht wird.
-//				
-//				MyMessageStoreFGL<T> objStore = (MyMessageStoreFGL<T>) getActivity().getIntent().getSerializableExtra(MyMessageHandler.EXTRA_STORE);
-//				if(objStore==null){
-//					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): KEIN ObjektStore aus dem Intent der Activity erhalten.");						
-//				}else{
-//					this.setMessageStore(objStore);
-//												
-//					//Nun Versuch sie in inStop() über einen Intent.getExtras zu sichern und hier wiederherzustellen
-//					sMessageCurrent = objStore.getString(MyMessageHandler.RESUME_MESSAGE);
-//					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): Wert per intent (aus MessageStore) sMessageCurrent = " + sMessageCurrent);			
-//						
-//					if(!StringZZZ.isEmptyNull(sMessageCurrent)&& !StringZZZ.isBlank(sMessageCurrent) & !StringZZZ.isWhitespace(sMessageCurrent)){
-//						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): Wert per intent (aus MessageStore) ist gefüllt");	
-//						
-//						//DAS FUNKTIONIERT GGFS. AUCH NICHT!!!
-//						EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
-//						editText.setText(sMessageCurrent + MyMessageHandler.MESSAGE_ADDITION_INTENT);
-//					}else{
-//						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onResume(): Wert per intent (aus MessageStore) ist leer oder NULL.");			
-//						
-//						EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
-//						editText.setText("");
-//					}
-//				}
-//			}
+			}			
 		}
 		
 		
@@ -827,31 +612,30 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 		 */
 		public void sendMessageToSearchWeb(View view){
 			//Start an intent
-					Intent intent = new Intent(getActivity(), DisplayWebviewActivityForSearch.class);
-					EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
-					String message = editText.getText().toString();
+			Intent intent = new Intent(getActivity(), DisplayWebviewActivityForSearch.class);
+			EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
+			String message = editText.getText().toString();
+			
+			//Besser als das Standard String.replace und Pattern zu verwenden ist hier die JAZKernel-Hilfsklasse		
+			message = MyMessageHandler.createNormedMessage(message);								
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+".sendMessageToSearchWeb(): message nach der Normierung = " + message);
+			
+			//Speichere die message in eine lokale Variable. Grund: So kann man sie dann wegsichern wenn sich der State des Geräts ändert.
+			this.setMessageCurrent(message);
 					
-					//Besser als das Standard String.replace und Pattern zu verwenden ist hier die JAZKernel-Hilfsklasse		
-					message = MyMessageHandler.createNormedMessage(message);								
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".sendMessageToSearchWeb(): message nach der Normierung = " + message);
+				//-----------------------------
+				//Mache eine Hilfsklasse, für das Wegsichern und auch wieder Zurückholen von den Intent-Informationen zwischen den Activities.
+				MyMessageStoreFGL<T> objStore = this.getMessageStore();
 					
-					//Speichere die message in eine lokale Variable. Grund: So kann man sie dann wegsichern wenn sich der State des Geräts ändert.
-					this.setMessageCurrent(message);
-							
-					//-----------------------------
-					//Mache eine Hilfsklasse, für das Wegsichern und auch wieder Zurückholen von den Intent-Informationen zwischen den Activities.
-					MyMessageStoreFGL<T> objStore = this.getMessageStore();
-						
-						//Fülle den Store mit dem Eintrag
-					objStore.put(MyMessageHandler.RESUME_MESSAGE, message); //IDEE: das sollte der Wert der UI-Komponente sein, also R.id.edit_message
-					
-						//Übergib den Store als ganzes an den Intent
-					intent.putExtra(MyMessageHandler.EXTRA_STORE, objStore);//objStore muss serializable sein
-					//------------------------------
-					
-					
-					//intent.putExtra(MyMessageHandler.EXTRA_MESSAGE, message);//Das wäre nach meiner Konvention einen Message auf oberster Ebene, ausserhalb des ObjektMessageStore.
-					startActivity(intent);			
+					//Fülle den Store mit dem Eintrag
+				objStore.put(MyMessageHandler.RESUME_MESSAGE, message); //IDEE: das sollte der Wert der UI-Komponente sein, also R.id.edit_message
+				
+					//Übergib den Store als ganzes an den Intent
+				intent.putExtra(MyMessageHandler.EXTRA_STORE, objStore);//objStore muss serializable sein
+				//------------------------------
+			
+			//intent.putExtra(MyMessageHandler.EXTRA_MESSAGE, message);//Das wäre nach meiner Konvention einen Message auf oberster Ebene, ausserhalb des ObjektMessageStore.
+			startActivity(intent);			
 		}
 		
 		
@@ -918,6 +702,7 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 				//Übergib den Store als ganzes an den Intent
 			intent.putExtra(MyMessageHandler.EXTRA_STORE, objStore);//objStore muss serializable sein
 			//------------------------------
+			
 			startActivity(intent);
 		}
 		
@@ -946,9 +731,7 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 				//Übergib den Store als ganzes an den Intent
 			intent.putExtra(MyMessageHandler.EXTRA_STORE, objStore);//objStore muss serializable sein
 			//------------------------------
-			
-			//FGL 20161203: Schalte diesen direkten Weg ab...
-			//intent.putExtra(MyMessageHandler.EXTRA_MESSAGE, message);
+
 			startActivityForResult(intent,1);
 		}
 		
@@ -981,10 +764,11 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 			return objActivityParent.getMessageStore();
 		}
 		
-		//Die Daten nur noch im objectStore der MainActivity halten.
-		//private ArrayList<String> listaSearchString = new ArrayList<String>();//Für die Liste der Suchwerte, sie wird gefüllt. Wenn sie leer ist, wird ein spezieller "Leereintrag" angezeigt.
 		@SuppressWarnings({ "unchecked"})
 		private ArrayList<String>getSearchElements(){
+			//Für die Liste der Suchwerte, sie wird gefüllt. Wenn sie leer ist, wird ein spezieller "Leereintrag" angezeigt.
+			//Die Daten nur noch im objectStore der MainActivity halten.
+			
 			ArrayList<String> listaReturn = new ArrayList<String>();
 			MyMessageStoreFGL<T> objStore = this.getMessageStore();
 			if(objStore!=null){
@@ -1175,26 +959,23 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 			*/
 		}
 		
-		public void onSaveInstanceState(Bundle outState){
+		public void onSaveInstanceState(Bundle outState){			
+			//NOTWENDIG ZUM ERHALTEN DER DATEN IM BUNDLE, WENN DAS GERÄT GEDREHT WIRD
+			//Merke: Bei Fragments gibt es keine onRestoreInstanceState()-Methode. Hole das Bundle in onActivityCreated ab.
+						
+			//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Gerät verbunden sein.
+					//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
+					//            und Eclipse neu starten muss.
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onSaveInstanceState() wurde aktiviert");
+						
+			//GRUND: SERIALIZIERUNG geht nur mit expliziter Klasse, ggf. reicht auch hier ein "dreckiger" Typecast
+			//TODO FGL 20161203: Ändere das auf den MessageObjectStore ab
+			ArrayList<String> listaTemp = this.getSearchElements();
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onSaveInstanceState(): Es sind '" + listaTemp.size() + "' Elemente in der Liste.");
+			outState.putSerializable(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT, listaTemp); //liste darf nicht das Interface sein, sondern muss explizit die Klasse ArrayList sein.
 			
-			//NOTWENDIG ZUM PERSISTIERN DER DATEN IM BUNDLE
-					//super.onSaveInstanceState(outState);
-					//FGL: Rufe beim Überschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.
-					
-					//FGL: Versuch etwas in LogCat auszugeben. Dazu muss der Emulator/das Gerät verbunden sein.
-							//     Merke: Hatte man ggfs. mehrere Emulatoren am Laufen, kann es sein, dass man alle beenden muss
-							//            und Eclipse neu starten muss.
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onSaveInstanceState() wurde aktiviert");
-					
-					
-					//GRUND: SERIALIZIERUNG geht nur mit expliziter Klasse, ggf. reicht auch hier ein "dreckiger" Typecast
-					//TODO FGL 20161203: Ändere das auf den MessageObjectStore ab
-					ArrayList<String> listaTemp = this.getSearchElements();
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onSaveInstanceState(): Es sind '" + listaTemp.size() + "' Elemente in der Liste.");
-					outState.putSerializable(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT, listaTemp); //liste darf nicht das Interface sein, sondern muss explizit die Klasse ArrayList sein.
-					super.onSaveInstanceState(outState);
-					
-					//Merke: Bei Fragments gibt es keine onRestoreInstanceState()-Methode. Hole das Bundle in onActivityCreated ab.
+			//FGL: Rufe beim Überschreiben dieser Event-Methoden IMMER die Methode der Elternklasse auf.					
+			super.onSaveInstanceState(outState);								
 		}
 		
 		@SuppressWarnings("unchecked")
@@ -1204,7 +985,6 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 			
 			//Damit die Events an den Buttons erhalten bleiben, wie im onCreate();			
 			initButtons();
-			
 			
 			if(savedInstanceState!=null){
 				MyMessageStoreFGL<T> objStore = (MyMessageStoreFGL<T>) savedInstanceState.getSerializable(MyMessageHandler.EXTRA_STORE);
@@ -1268,14 +1048,9 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 			}	
 		}
 		
-		
-		
-		
 		 /** Called when the user clicks the RemoveFromList button */
 		public void removeFromList(View view) {
-		 			
 			Log.d("FGLSTATE", this.getClass().getSimpleName()+".removerFromList(): START");
-			
 						
 			//-----------------------------
 			//Mache eine Hilfsklasse, für das Wegsichern und auch wieder Zurückholen von den Intent-Informationen zwischen den Activities.
@@ -1283,48 +1058,24 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 			if(objStore==null){
 				Log.d("FGLSTATE", this.getClass().getSimpleName()+".removerFromList(): KEIN STORE OBJEKT.");
 			}else{
-				//Hole aus dem Store die ArrayList
-				//objStore.put(MyMessageHandler.RESUME_MESSAGE, message); //IDEE: das sollte der Wert der UI-Komponente sein, also R.id.edit_message
-				
-				//Hole die markierte Position aus der Designelement-Liste
-				//Übergib den Store als ganzes an den Intent
-				//intent.putExtra(MyMessageHandler.EXTRA_STORE, objStore);//objStore muss serializable sein
-				//------------------------------				
-			}
-		
-		
-			//intent.putExtra(MyMessageHandler.EXTRA_MESSAGE, message);
-			//startActivityForResult(intent,1);
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+".removerFromList(): STORE OBJEKT gefunden.");		
+			}		
 		}
 		
 		 /** Called when the user clicks the SearchWebFromList button */
 		public void sendMessageToSearchWebFromList(View view) {
-		 			
 			Log.d("FGLSTATE", this.getClass().getSimpleName()+".sendMessageToSearchWebFromList(): START");
-			
-						
+				
 			//-----------------------------
 			//Mache eine Hilfsklasse, für das Wegsichern und auch wieder Zurückholen von den Intent-Informationen zwischen den Activities.
 			MyMessageStoreFGL<T> objStore = this.getMessageStore();
 			if(objStore==null){
 				Log.d("FGLSTATE", this.getClass().getSimpleName()+".sendMessageToSearchWebFromList(): KEIN STORE OBJEKT.");
 			}else{
-				//Hole aus dem Store die ArrayList
-				//objStore.put(MyMessageHandler.RESUME_MESSAGE, message); //IDEE: das sollte der Wert der UI-Komponente sein, also R.id.edit_message
-				
-				//Hole die markierte Position aus der Designelement-Liste
-				//Übergib den Store als ganzes an den Intent
-				//intent.putExtra(MyMessageHandler.EXTRA_STORE, objStore);//objStore muss serializable sein
-				//------------------------------				
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+".sendMessageToSearchWebFromList(): STORE OBJEKT.");			
 			}
-		
-		
-			//intent.putExtra(MyMessageHandler.EXTRA_MESSAGE, message);
-			//startActivityForResult(intent,1);
 		}
 		
-		
-				
 		private TextView noItems(ListView listView, String text) {
 			//Merke1: 
 			//ListView als Argument aufgenommen. Abgewandelt von einem Beispiel für ListFragments.
@@ -1360,88 +1111,88 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 		}
 		
 		//###########################################################################
-				private void initButtons(){
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".initButtons(): START");
-							
-							//FGL 20161204: Wenn man die Events im Fragment selbst haben will,
-							//              muss man den Event-Handler am Button hier einbauen.
-							//              sonst gibt es Fehlermeldungen der Art:
-							//12-04 06:02:41.664: E/AndroidRuntime(1778): java.lang.IllegalStateException: Could not find method sendMessage(View) in a parent or ancestor Context for android:onClick attribute defined on view class android.support.v7.widget.AppCompatButton with id 'button_send'
-							//              Alternativ dazu die Methode in der Activity belassen, was meiner Meinung nach eine unschöne Lösung ist, wg. mangelnder Kapselung.
-							
-					Button button_removeFromList = (Button) getActivity().findViewById(R.id.button_remove_from_list);
-				    Button button_searchFromList = (Button) getActivity().findViewById(R.id.button_search_web_from_list);
-				    
-						//FGL 20161204: Das geht so nicht... zumindest in Fragments geht das nicht.
-						   /*button.setOnClickListener(new OnClickListener()
-						   {
-						             @Override
-						             public void onClick(View v)
-						             {
-						                // do something
-						             } 
-						   }); */
-						
-					//FGL 20161204: Alternativer Weg für den Listener, wenn das Fragment view.OnClickListener implementiert
-					if(button_removeFromList!=null) button_removeFromList.setOnClickListener(this);		
-					if(button_searchFromList!=null) button_searchFromList.setOnClickListener(this);
-
-				}
+		private void initButtons(){
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+".initButtons(): START");
+					
+					//FGL 20161204: Wenn man die Events im Fragment selbst haben will,
+					//              muss man den Event-Handler am Button hier einbauen.
+					//              sonst gibt es Fehlermeldungen der Art:
+					//12-04 06:02:41.664: E/AndroidRuntime(1778): java.lang.IllegalStateException: Could not find method sendMessage(View) in a parent or ancestor Context for android:onClick attribute defined on view class android.support.v7.widget.AppCompatButton with id 'button_send'
+					//              Alternativ dazu die Methode in der Activity belassen, was meiner Meinung nach eine unschöne Lösung ist, wg. mangelnder Kapselung.
+					
+			Button button_removeFromList = (Button) getActivity().findViewById(R.id.button_remove_from_list);
+		    Button button_searchFromList = (Button) getActivity().findViewById(R.id.button_search_web_from_list);
+		    
+				//FGL 20161204: Das geht so nicht... zumindest in Fragments geht das nicht.
+				   /*button.setOnClickListener(new OnClickListener()
+				   {
+				             @Override
+				             public void onClick(View v)
+				             {
+				                // do something
+				             } 
+				   }); */
 				
-				private void initValueDriven(MyMessageStoreFGL objStore){
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): START.");
-					if(objStore==null){
-						Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): Kein ObjStore.");
+			//FGL 20161204: Alternativer Weg für den Listener, wenn das Fragment view.OnClickListener implementiert
+			if(button_removeFromList!=null) button_removeFromList.setOnClickListener(this);		
+			if(button_searchFromList!=null) button_searchFromList.setOnClickListener(this);
+
+		}
+				
+		private void initValueDriven(MyMessageStoreFGL objStore){
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): START.");
+			if(objStore==null){
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): Kein ObjStore.");
+				
+			}else{
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): ObjStore vorhanden.");
+				
+				//Blende nun ggfs. die verborgenen Buttons wieder ein.
+				ArrayList<String> listaTemp = objStore.getArrayList(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT);
+				if(listaTemp==null){
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): objStore hat keine Arrayliste für die Suchelement gespeichert.");
+					
+					//Mache die Buttons unsichtbar, die für die Arbeit mit der Liste gedacht sind
+					Button b1 = (Button) getActivity().findViewById(R.id.button_search_web_from_list);
+					if(b1!=null) b1.setVisibility(View.INVISIBLE);//besser als gone ist invisible--- das mach transparent
+					
+					Button b2 = (Button) getActivity().findViewById(R.id.button_remove_from_list);
+					if(b2!=null) b2.setVisibility(View.INVISIBLE);//besser als gone ist invisible--- das mach transparent
+				}else{
+					if(listaTemp.size()==0){
+						Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): Arrayliste aus objStore ist leer.");
 						
+						//Mache die Buttons unsichtbar, die für die Arbeit mit der Liste gedacht sind
+						Button b1 = (Button) getActivity().findViewById(R.id.button_search_web_from_list);
+						if(b1!=null) b1.setVisibility(View.INVISIBLE);//besser als gone ist invisible--- das mach transparent
+						
+						Button b2 = (Button) getActivity().findViewById(R.id.button_remove_from_list);
+						if(b2!=null) b2.setVisibility(View.INVISIBLE);//besser als gone ist invisible--- das mach transparent
 					}else{
-						Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): ObjStore vorhanden.");
-						
-						//Blende nun ggfs. die verborgenen Buttons wieder ein.
-						ArrayList<String> listaTemp = objStore.getArrayList(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT);
-						if(listaTemp==null){
-							Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): objStore hat keine Arrayliste für die Suchelement gespeichert.");
-							
-							//Mache die Buttons unsichtbar, die für die Arbeit mit der Liste gedacht sind
-							Button b1 = (Button) getActivity().findViewById(R.id.button_search_web_from_list);
-							if(b1!=null) b1.setVisibility(View.INVISIBLE);//besser als gone ist invisible--- das mach transparent
-							
-							Button b2 = (Button) getActivity().findViewById(R.id.button_remove_from_list);
-							if(b2!=null) b2.setVisibility(View.INVISIBLE);//besser als gone ist invisible--- das mach transparent
+						Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): Arrayliste aus objStore, Anzahl Elemente: '" + listaTemp.size() + "'");
+														
+						//Mache die Buttons sichtbar, die für die Arbeit mit der Liste gedacht sind
+						Button b1 = (Button) getActivity().findViewById(R.id.button_search_web_from_list);
+						if(b1!=null) {
+							Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): Button gefunden und aktiviert 'search web from list'");									
+							b1.setEnabled(true);
+							b1.setVisibility(View.VISIBLE);									
 						}else{
-							if(listaTemp.size()==0){
-								Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): Arrayliste aus objStore ist leer.");
-								
-								//Mache die Buttons unsichtbar, die für die Arbeit mit der Liste gedacht sind
-								Button b1 = (Button) getActivity().findViewById(R.id.button_search_web_from_list);
-								if(b1!=null) b1.setVisibility(View.INVISIBLE);//besser als gone ist invisible--- das mach transparent
-								
-								Button b2 = (Button) getActivity().findViewById(R.id.button_remove_from_list);
-								if(b2!=null) b2.setVisibility(View.INVISIBLE);//besser als gone ist invisible--- das mach transparent
-							}else{
-								Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): Arrayliste aus objStore, Anzahl Elemente: '" + listaTemp.size() + "'");
-																
-								//Mache die Buttons sichtbar, die für die Arbeit mit der Liste gedacht sind
-								Button b1 = (Button) getActivity().findViewById(R.id.button_search_web_from_list);
-								if(b1!=null) {
-									Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): Button gefunden und aktiviert 'search web from list'");									
-									b1.setEnabled(true);
-									b1.setVisibility(View.VISIBLE);									
-								}else{
-									Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): Button NICHT gefunden und aktiviert 'search web from list'");
-								}
-								
-								Button b2 = (Button) getActivity().findViewById(R.id.button_remove_from_list);
-								if(b2!=null) {
-									Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): Button gefunden und aktiviert 'remove from list'");
-									b2.setEnabled(true);
-									b2.setVisibility(View.VISIBLE);								
-								}else{
-									Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): Button NICHT gefunden und aktiviert 'remove from list'");
-								}
-							}
+							Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): Button NICHT gefunden und aktiviert 'search web from list'");
 						}
-					}//end if objStore == null
+						
+						Button b2 = (Button) getActivity().findViewById(R.id.button_remove_from_list);
+						if(b2!=null) {
+							Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): Button gefunden und aktiviert 'remove from list'");
+							b2.setEnabled(true);
+							b2.setVisibility(View.VISIBLE);								
+						}else{
+							Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDrive(): Button NICHT gefunden und aktiviert 'remove from list'");
+						}
+					}
 				}
+			}//end if objStore == null
+		}
 				
 		private void initialisiereListTestElemente(){
 			String[] saTest = {"eins","zwei","drei","vier","fünf"};

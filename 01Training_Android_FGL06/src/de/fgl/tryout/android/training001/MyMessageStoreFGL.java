@@ -19,6 +19,7 @@ import basic.zBasic.util.abstractList.CollectionAndroidUtils;
  *          Die anderen Werte sind dann hierin (... irgendwie in einer Map ... ) abgelegt.
  * @author Fritz Lindhauer
  *Muss serializable sein, damit es mit intent.putExtra(MyMessageHanlder.EXTRA_STORE, objStore) an den Intent übergeben werden kann.
+ *Damit es serialisierbar ist, dürfen hier auch nur serialisierbare Objekte hinein.
  * @param <T>
  */
 public class MyMessageStoreFGL<T> extends ObjectZZZ implements Serializable
