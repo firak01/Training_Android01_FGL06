@@ -21,10 +21,13 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Adapter;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -764,6 +767,34 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 			return objActivityParent.getMessageStore();
 		}
 		
+		//Vgl. Buch Andorid 4.4. Ein Listener, der die Auswahl in der ListView bemerkt.
+		//Die Methode on NothingSelected muss dann auch automatisch implementiert werden.
+		//ABER: onItemSelected wird nie aufgerufen
+		private AdapterView.OnItemSelectedListener objListViewItemSelectedListener = new AdapterView.OnItemSelectedListener(){
+			@Override
+			public void onItemSelected(AdapterView<?> arg0, View arg1, int position, long id){
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onItemSelected() Item ausgewählt an Position: '"+position+"'");
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> parent) {
+				// TODO Auto-generated method stub
+				
+			}
+		};
+		
+		//Versuche analog zu AdapterView.OnItemSelected onItemClick zu ermöglichen
+		//Die Methode onItemClick muss dann automatisch implementiert werden.
+				private AdapterView.OnItemClickListener objListViewItemClickedListener = new OnItemClickListener(){
+
+					@Override
+					public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onItemClick() Item geclickt an Position: '"+position+"'");
+						
+						//TODO GOON: 20161213 Hier eine ArrayList der geclickten Werte verwalten.
+					}
+				};
+		
 		@SuppressWarnings({ "unchecked"})
 		private ArrayList<String>getSearchElements(){
 			//Für die Liste der Suchwerte, sie wird gefüllt. Wenn sie leer ist, wird ein spezieller "Leereintrag" angezeigt.
@@ -868,12 +899,17 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 			}else{
 				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() vwList gefunden.");
 
+				//Damit die ListView auf die Selection von Einträgen reagieren kann.
+				vwList.setOnItemSelectedListener(this.objListViewItemSelectedListener);//ABER: Scheinbar wird in der View das Auswählen so nicht gemerkt....
 				
+				//Damit die ListView auf das Anclicken von Einträgen reagieren kann.
+				vwList.setOnItemClickListener(this.objListViewItemClickedListener);
+								
 				//Versuche einen Eintrag für "keine Elemente" bereitzustellen. Mache dies nur im "onCreate" (und nicht im start()), da ansonsten beim Betätigen des "Return" Buttons mehrer dieser Einträge passieren.
 				//Remember to place the emptyView after binding the adapter to listview.Mine was not working for first time and after I moved the setEmptyView after the setAdapter it is now working.
 				TextView txtNoItems = noItems(vwList, getResources().getString(R.string.element_search_web_from_list_empty));
 				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() Leerlisteneintrag txtNoItems erzeugt.");
-				
+			
 				vwList.setEmptyView(txtNoItems);
 				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() Leerlisteneintrag txtNoItems gesetzt.");
 				
@@ -1059,6 +1095,27 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 				Log.d("FGLSTATE", this.getClass().getSimpleName()+".removerFromList(): KEIN STORE OBJEKT.");
 			}else{
 				Log.d("FGLSTATE", this.getClass().getSimpleName()+".removerFromList(): STORE OBJEKT gefunden.");		
+				
+				//Hole das Listen-Designelement
+				ListView objList = (ListView) getActivity().findViewById(R.id.list_search_web);
+				if(objList==null){
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".removerFromList(): KEIN ListView Desing-OBJEKT gefunden.");
+				}else{
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".removerFromList(): ListView Desing-OBJEKT gefunden.");	
+					
+					//Das liefert immer NULL zurück String sSelected = (String) objList.getSelectedItem();
+					//Versuch über den ListAdapter zu gehen. Diesen ListViewAdapter müssen wir aber erst einmal in einer neuen Klasse implementieren.
+					//OnItemSelectedListener des Objekts objListViewItemSelectedListener.
+					//Dieses Objekt muss der ListView mit lv.setOnItemSelectedListener(obListViewItemdSelectedListener) hinzugefügt werden.
+					
+					//Dann kann man aus der so ermittelten Postion heraus den Wert ermitteln
+					///....
+					//Log.d("FGLSTATE", this.getClass().getSimpleName()+".removerFromList(): Selektiertes Objekt='"+sSelected+"'");
+					
+					
+					
+					
+				}
 			}		
 		}
 		
