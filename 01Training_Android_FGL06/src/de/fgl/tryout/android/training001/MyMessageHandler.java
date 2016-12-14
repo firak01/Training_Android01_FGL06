@@ -20,6 +20,7 @@ public class MyMessageHandler {
 	
 	public final static String KEY_MESSAGE_CURRENT="currentMessage";
 	public final static String KEY_ELEMENTS_TO_SEARCH_CURRENT="currentListToSearchElements";
+	public final static String KEY_ELEMENTS_TO_SEARCH_CLICKED="currentListToSearchElementsClicked";
 	
 	//Folgende Texte werden beim Zurückkehren aus der "DisplayMessageActivity" an den Sende String gehängt. Je nachdem welcher Weg gewählt wurde.
 	public final static String MESSAGE_ADDITION_VARIABLE=" (wiederhergestellt per Variable)";

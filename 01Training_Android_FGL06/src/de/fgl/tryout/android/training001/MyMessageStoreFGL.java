@@ -55,7 +55,7 @@ public class MyMessageStoreFGL<T> extends ObjectZZZ implements Serializable
 		this.getHashMapAll().put(sKey, sValue);		
 	}
 	@SuppressWarnings("unchecked")
-	public void put(String sKey, ArrayList<String> listaTemp) {
+	public void put(String sKey, ArrayList<T> listaTemp) {
 		this.getHashMapAll().put(sKey, (T) listaTemp);
 	}
 	
@@ -91,6 +91,8 @@ public class MyMessageStoreFGL<T> extends ObjectZZZ implements Serializable
 		}		
 		return hmReturn;
 	}
+	
+	
 	
 	
 	

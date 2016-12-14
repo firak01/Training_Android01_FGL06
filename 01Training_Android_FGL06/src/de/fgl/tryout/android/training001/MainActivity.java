@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -781,7 +782,7 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 				// TODO Auto-generated method stub
 				
 			}
-		};
+		};//end new OnItemSelectedListener
 		
 		//Versuche analog zu AdapterView.OnItemSelected onItemClick zu ermöglichen
 		//Die Methode onItemClick muss dann automatisch implementiert werden.
@@ -792,27 +793,80 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onItemClick() Item geclickt an Position: '"+position+"'");
 						
 						//TODO GOON: 20161213 Hier eine ArrayList der geclickten Werte verwalten.
+						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onItemClick() parent hat die Klasse: '"+parent.getClass().getName()+"'");
+						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onItemClick() parent hat als parent die Klasse: '"+parent.getParent().getClass().getName()+"'");
+						
+						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onItemClick() view.getContext() hat die Klasse: '"+view.getContext().getClass().getName()+"'");
+						PlaceholderFragmentList<T> fragment = (PlaceholderFragmentList<T>) ((FragmentActivity) view.getContext()).getSupportFragmentManager().findFragmentByTag("FRAGMENT_MAIN_LIST");
+						if(fragment==null){
+							Log.d("FGLSTATE", this.getClass().getSimpleName()+".onItemClick() : Fragment nicht gefunden.");
+						}else{
+							Log.d("FGLSTATE", this.getClass().getSimpleName()+".onItemClick() : Zugriff auf das Fragment.");
+							fragment.handleSearchElementsClicked(position);
+						}
+						
+						//TODO GOON: 
 					}
-				};
+				};//end new OnItemClickListener
 		
 		@SuppressWarnings({ "unchecked"})
 		private ArrayList<String>getSearchElements(){
 			//Für die Liste der Suchwerte, sie wird gefüllt. Wenn sie leer ist, wird ein spezieller "Leereintrag" angezeigt.
 			//Die Daten nur noch im objectStore der MainActivity halten.
 			
-			ArrayList<String> listaReturn = new ArrayList<String>();
+			ArrayList<String> listaReturn = null;
 			MyMessageStoreFGL<T> objStore = this.getMessageStore();
 			if(objStore!=null){
 				listaReturn = (ArrayList<String>) objStore.getArrayList(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT);
+			}else{
+				listaReturn = new ArrayList<String>();
 			}
 			return listaReturn;
 		}
 		private void setSearchElements(ArrayList<String> listaSearchString){
 			MyMessageStoreFGL<T> objStore = this.getMessageStore();
 			if(objStore!=null){
-				objStore.put(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT, listaSearchString);
+				objStore.put(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT, (ArrayList<T>)listaSearchString);
 			}
 		}
+		
+		
+		//#### Führe eine Liste der geclickten Elemente
+		@SuppressWarnings({ "unchecked"})
+		private ArrayList<Integer>getSearchElementsIndexClicked(){
+			//Für die Liste der Suchwerte, sie wird gefüllt. Wenn sie leer ist, wird ein spezieller "Leereintrag" angezeigt.
+			//Die Daten nur noch im objectStore der MainActivity halten.
+			
+			ArrayList<Integer> listaReturn = null;
+			MyMessageStoreFGL<T> objStore = this.getMessageStore();
+			if(objStore!=null){
+				listaReturn = (ArrayList<Integer>) objStore.getArrayList(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CLICKED);
+			}else{
+				listaReturn = new ArrayList<Integer>();
+			}
+			return listaReturn;
+		}
+		private void setSearchElementsIndexClicked(ArrayList<Integer> listaSearchInteger){
+			MyMessageStoreFGL<T> objStore = this.getMessageStore();
+			if(objStore!=null){
+				objStore.put(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CLICKED, (ArrayList<T>)listaSearchInteger);
+			}
+		}
+		private void handleSearchElementsClicked(int iPosition){
+			Integer intPosition=new Integer(iPosition);
+			
+			//Hole die ArrayListe
+			ArrayList<Integer> lista = this.getSearchElementsIndexClicked();
+			if(lista.contains(intPosition)){
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+".handleSearchElementsClicked() : Index schon geclickt. Entferne ihn: '" + intPosition.toString()+"'");
+				lista.remove(intPosition);
+			}else{
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+".handleSearchElementsClicked() : Index noch nicht geclickt. Füge ihn hinzu: '" + intPosition.toString()+"'");				
+				lista.add(intPosition);
+			}
+			this.setSearchElementsIndexClicked(lista);			
+		}
+		
 		
 		
 		
@@ -855,7 +909,7 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 			ListView vwList = (ListView) ((AppCompatActivity) getContext()).findViewById(R.id.list_search_web);
 			if(vwList!=null){
 				ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, saTemp);//Haken werden hinter den Elementen angezeigt.
-				this.setArrayAdapter(myArrayAdapter);//20161128: das funktioniert... ist aber eine nicht so toll, immer korrekt angepasste Breite der Einträge.
+				//FGL 20161214 raus.... es sollte doch reichen, wenn die View den Adapter bekommt ....  this.setArrayAdapter(myArrayAdapter);//20161128: das funktioniert... ist aber eine nicht so toll, immer korrekt angepasste Breite der Einträge.
 	
 				Log.d("FGLSTATE", this.getClass().getSimpleName()+".addElement() Arrayadapter neu gefüllt.");
 				vwList.setAdapter(myArrayAdapter);	
@@ -890,69 +944,27 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 			initButtons();
 			
 			//#####################################################
-			//Hier, versuche die ListView zu füllen
-			ListView vwList;
-			vwList = (ListView) rootView.findViewById(R.id.list_search_web);
-			if(vwList==null){
-				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() vwList ist NULL.");
+			if(savedInstanceState==null){
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() mit Bundle 'savedInstanceState' ist NULL.");
 				
+				//Teste auf gefüllte Liste
+				//initialisiereListTestElemente();
 			}else{
-				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() vwList gefunden.");
 
-				//Damit die ListView auf die Selection von Einträgen reagieren kann.
-				vwList.setOnItemSelectedListener(this.objListViewItemSelectedListener);//ABER: Scheinbar wird in der View das Auswählen so nicht gemerkt....
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() mit Bundle 'savedInstanceState' gefunden.");
 				
-				//Damit die ListView auf das Anclicken von Einträgen reagieren kann.
-				vwList.setOnItemClickListener(this.objListViewItemClickedListener);
-								
-				//Versuche einen Eintrag für "keine Elemente" bereitzustellen. Mache dies nur im "onCreate" (und nicht im start()), da ansonsten beim Betätigen des "Return" Buttons mehrer dieser Einträge passieren.
-				//Remember to place the emptyView after binding the adapter to listview.Mine was not working for first time and after I moved the setEmptyView after the setAdapter it is now working.
-				TextView txtNoItems = noItems(vwList, getResources().getString(R.string.element_search_web_from_list_empty));
-				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() Leerlisteneintrag txtNoItems erzeugt.");
-			
-				vwList.setEmptyView(txtNoItems);
-				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() Leerlisteneintrag txtNoItems gesetzt.");
+				//Stelle die Liste mit Suchelementen wieder her
+				//TODO FGL 20161203: Hohle die Werte aus dem ObjectMessageStore.
 				
-				if(savedInstanceState==null){
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() mit Bundle 'savedInstanceState' ist NULL.");
-					
-					//Teste auf gefüllte Liste
-					//initialisiereListTestElemente();
-				}else{
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() mit Bundle 'savedInstanceState' gefunden.");
-					
-					//Stelle die Liste mit Suchelementen wieder her
-					//TODO FGL 20161203: Hohle die Werte aus dem ObjectMessageStore.
-					
-					//GRUND: SERIALIZIERUNG geht nur mit expliziter Klasse, ggf. reicht auch hier ein "dreckiger" Typecast		
-					ArrayList<String> listaTemp = (ArrayList<String>) savedInstanceState.get(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT);
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() mit Bundle '" + listaTemp.size() + "' ArrayList SuchListen-Elementen.");
-					this.setSearchElements(listaTemp);						
-				}
-				
-			
-				//Zeige die Liste mit Suchelementen an.	
-				ArrayList<String> listaTemp = (ArrayList<String>) this.getSearchElements();
-				
-				if(listaTemp.isEmpty()){
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() ArrayList für Elemente ist leer.");
-					//Merke: Im onStart wird ein Element erstellt, dass angezeigt werden soll, wenn die Liste leer ist.
-				}else{
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() ArrayList mit Elementen ist gefüllt. Anzahl Elemente: " + getSearchElements().size());
-				}
-										
-					//1. Versuch: Cast Fehler. man man nicht Object[] in String[] casten  ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, (String[])listaSearchString.toArray());//Haken werden hinter den Elementen angezeigt.
-					//2. Versuch: NullPointer Exception: Attempt to get length of null Array.
-					//The toArray() method without passing any argument returns Object[]. So you have to pass an array as an argument, which will be filled with the data from the list, and returned. You can pass an empty array as well, but you can also pass an array with the desired size.
-					String[] saTemp = listaTemp.toArray(new String[listaTemp.size()]);
-																
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() saTemp erzeugt.");
-					ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, saTemp);//Haken werden hinter den Elementen angezeigt.
-					this.setArrayAdapter(myArrayAdapter);
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() Arrayadapter erzeugt.");
-					vwList.setAdapter(myArrayAdapter);	
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() Arrayadapter gesetzt.");									
+				//GRUND: SERIALIZIERUNG geht nur mit expliziter Klasse, ggf. reicht auch hier ein "dreckiger" Typecast		
+				ArrayList<String> listaTemp = (ArrayList<String>) savedInstanceState.get(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT);
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() mit Bundle '" + listaTemp.size() + "' ArrayList SuchListen-Elementen.");
+				this.setSearchElements(listaTemp);						
 			}
+								
+			//Hier, versuche die ListView zu füllen UND binde künstlich Events an die View
+			initViewItemWebSearch(rootView);
+						
 			return rootView;
 		}
 		
@@ -1041,27 +1053,29 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 				}else{
 					Log.d("FGLSTATE",this.getClass().getSimpleName()+".onActivityCreated() ArrayList mit Elementen ist gefüllt. Anzahl Elemente: " + listaTemp.size());
 					
+					//#############################################################
 					//Hier, versuche die ListView zu füllen
-					ListView vwList;					
-					vwList = (ListView) getActivity().findViewById(R.id.list_search_web);
-					if(vwList==null){
-						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated() vwList ist NULL.");
-						
-					}else{
-						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated() vwList gefunden.");
-
-						//1. Versuch: Cast Fehler. man man nicht Object[] in String[] casten  ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, (String[])listaSearchString.toArray());//Haken werden hinter den Elementen angezeigt.
-						//2. Versuch: NullPointer Exception: Attempt to get length of null Array.
-						//The toArray() method without passing any argument returns Object[]. So you have to pass an array as an argument, which will be filled with the data from the list, and returned. You can pass an empty array as well, but you can also pass an array with the desired size.
-						String[] saTemp = listaTemp.toArray(new String[listaTemp.size()]);
-																	
-						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated() saTemp erzeugt.");
-						ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, saTemp);//Haken werden hinter den Elementen angezeigt.
-						this.setArrayAdapter(myArrayAdapter);
-						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated() Arrayadapter erzeugt.");
-						vwList.setAdapter(myArrayAdapter);	
-						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated() Arrayadapter gesetzt.");	
-					}																					
+					initViewItemWebSearch();
+//					ListView vwList;					
+//					vwList = (ListView) getActivity().findViewById(R.id.list_search_web);
+//					if(vwList==null){
+//						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated() vwList ist NULL.");
+//						
+//					}else{
+//						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated() vwList gefunden.");
+//
+//						//1. Versuch: Cast Fehler. man man nicht Object[] in String[] casten  ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, (String[])listaSearchString.toArray());//Haken werden hinter den Elementen angezeigt.
+//						//2. Versuch: NullPointer Exception: Attempt to get length of null Array.
+//						//The toArray() method without passing any argument returns Object[]. So you have to pass an array as an argument, which will be filled with the data from the list, and returned. You can pass an empty array as well, but you can also pass an array with the desired size.
+//						String[] saTemp = listaTemp.toArray(new String[listaTemp.size()]);
+//																	
+//						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated() saTemp erzeugt.");
+//						ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, saTemp);//Haken werden hinter den Elementen angezeigt.
+//						this.setArrayAdapter(myArrayAdapter);
+//						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated() Arrayadapter erzeugt.");
+//						vwList.setAdapter(myArrayAdapter);	
+//						Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated() Arrayadapter gesetzt.");	
+//					}																					
 				}		//end if(this.listaSearchString.isEmpty()){		
 				}//end if (objStore == null)
 			}else{
@@ -1099,9 +1113,9 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 				//Hole das Listen-Designelement
 				ListView objList = (ListView) getActivity().findViewById(R.id.list_search_web);
 				if(objList==null){
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".removerFromList(): KEIN ListView Desing-OBJEKT gefunden.");
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".removeFromList(): KEIN ListView Desing-OBJEKT gefunden.");
 				}else{
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".removerFromList(): ListView Desing-OBJEKT gefunden.");	
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".removeFromList(): ListView Desing-OBJEKT gefunden.");	
 					
 					//Das liefert immer NULL zurück String sSelected = (String) objList.getSelectedItem();
 					//Versuch über den ListAdapter zu gehen. Diesen ListViewAdapter müssen wir aber erst einmal in einer neuen Klasse implementieren.
@@ -1112,9 +1126,53 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 					///....
 					//Log.d("FGLSTATE", this.getClass().getSimpleName()+".removerFromList(): Selektiertes Objekt='"+sSelected+"'");
 					
+					//ABER: Die ListView weiss irgendwie nicht welche Items geclickt sind.
+					//Lösung: Füge einen onClick-Listener hinzu und verwalte in einer ArrayList die geclickten Werte selbst.
+					ArrayList<String> listaElement = this.getSearchElements();					
+					ArrayList<Integer>lista = this.getSearchElementsIndexClicked();
 					
+					//Entferne die Indices aus der Gesamtliste
+					for(Integer intObject : lista){
+						Log.d("FGLSTATE", this.getClass().getSimpleName()+".removeFromList(): Entferne an Position '" + intObject.toString() + "'");
+						listaElement.remove(intObject.intValue());						
+					}
+					this.setSearchElements(listaElement);
 					
+					//Entferne diese Indexeinträge auch aus der Click-Liste
+					for(Integer intObject : lista){
+						Log.d("FGLSTATE", this.getClass().getSimpleName()+".removeFromList(): Entferne aus Click-Liste an Position '" + intObject.toString() + "'");
+						lista.remove(intObject);						
+					}										
+					this.setSearchElementsIndexClicked(lista);
 					
+					//PROBLEM: Wie das Entefernen des Elements wieder in die Ansicht bringen.
+					String[] saTemp = listaElement.toArray(new String[listaElement.size()]);
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".removeFromList() saTemp erzeugt.");
+					ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(objList.getContext(), android.R.layout.simple_list_item_checked, saTemp);//Haken werden hinter den Elementen angezeigt.
+					//20161214 es muss reichen den ArrayAdapter an die View selbst zu binden ...  this.setArrayAdapter(myArrayAdapter);//20161128: das funktioniert... ist aber eine nicht so toll, immer korrekt angepasste Breite der Einträge.
+		
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".removeFromList() Arrayadapter neu gefüllt.");
+					objList.setAdapter(myArrayAdapter);	
+					//vwList.invalidateViews();//20161128: Dies nicht machen, sonst wird jedesmal diese View 'zusätzlich' geladen (zumindest in meinen Tests)
+			       objList.refreshDrawableState();	
+			        
+			       
+			       //TODO GOON: Wenn die Anzahl der Suchelemente <= 0 wird die Buttons wieder deaktivieren.
+			       
+			        //Mache den Button "Suche per Liste" aktiviert.
+//			        Button buttonSearchFromList = (Button)((AppCompatActivity)getContext()).findViewById(R.id.button_search_web_from_list);
+//			        if(buttonSearchFromList!=null){
+//			        	buttonSearchFromList.setEnabled(true);
+//			        	buttonSearchFromList.setClickable(true);//TODO: Bei einem Element der Liste Clickbar, ab 2 Elementen erst Clickbar, wenn mindestens 1 Element der Liste ausgewählt wurde.
+//			        }//buttonSearchFromList != null
+//			        
+//			        //Mache den Button "Entferne aus Liste" aktiviert.
+//			        Button buttonRemoveFromList = (Button)((AppCompatActivity)getContext()).findViewById(R.id.button_remove_from_list);
+//			        if(buttonRemoveFromList!=null){
+//			        	buttonRemoveFromList.setEnabled(true);
+//			        	buttonRemoveFromList.setClickable(true);//TODO: Bei einem Element der Liste Clickbar, ab 2 Elementen erst Clickbar, wenn mindestens 1 Element der Liste ausgewählt wurde.
+//			        }//buttonRemoveFromList != null
+			        					
 				}
 			}		
 		}
@@ -1249,6 +1307,61 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 					}
 				}
 			}//end if objStore == null
+		}
+		
+		private void initViewItemWebSearch(){
+			this.initViewItemWebSearch(null);
+		}
+		private void initViewItemWebSearch(View rootView){
+
+			ListView vwList=null;
+			if(rootView==null){
+				
+			}else{
+				vwList = (ListView) rootView.findViewById(R.id.list_search_web);
+			}
+			if(vwList==null){
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() vwList ist NULL.");
+				
+			}else{
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() vwList gefunden.");
+
+				//Damit die ListView auf die Selection von Einträgen reagieren kann.
+				vwList.setOnItemSelectedListener(this.objListViewItemSelectedListener);//ABER: Scheinbar wird in der View das Auswählen so nicht gemerkt....
+				
+				//Damit die ListView auf das Anclicken von Einträgen reagieren kann.
+				vwList.setOnItemClickListener(this.objListViewItemClickedListener);
+								
+				//Versuche einen Eintrag für "keine Elemente" bereitzustellen. Mache dies nur im "onCreate" (und nicht im start()), da ansonsten beim Betätigen des "Return" Buttons mehrer dieser Einträge passieren.
+				//Remember to place the emptyView after binding the adapter to listview.Mine was not working for first time and after I moved the setEmptyView after the setAdapter it is now working.
+				TextView txtNoItems = noItems(vwList, getResources().getString(R.string.element_search_web_from_list_empty));
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() Leerlisteneintrag txtNoItems erzeugt.");
+			
+				vwList.setEmptyView(txtNoItems);
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() Leerlisteneintrag txtNoItems gesetzt.");
+				
+				//Zeige die Liste mit Suchelementen an.	
+				ArrayList<String> listaTemp = (ArrayList<String>) this.getSearchElements();
+				
+				if(listaTemp.isEmpty()){
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() ArrayList für Elemente ist leer.");
+					//Merke: Im onStart wird ein Element erstellt, dass angezeigt werden soll, wenn die Liste leer ist.
+				}else{
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() ArrayList mit Elementen ist gefüllt. Anzahl Elemente: " + getSearchElements().size());
+				}
+										
+					//1. Versuch: Cast Fehler. man man nicht Object[] in String[] casten  ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, (String[])listaSearchString.toArray());//Haken werden hinter den Elementen angezeigt.
+					//2. Versuch: NullPointer Exception: Attempt to get length of null Array.
+					//The toArray() method without passing any argument returns Object[]. So you have to pass an array as an argument, which will be filled with the data from the list, and returned. You can pass an empty array as well, but you can also pass an array with the desired size.
+					String[] saTemp = listaTemp.toArray(new String[listaTemp.size()]);
+																
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() saTemp erzeugt.");
+					ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, saTemp);//Haken werden hinter den Elementen angezeigt.
+					this.setArrayAdapter(myArrayAdapter);
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() Arrayadapter erzeugt.");
+					vwList.setAdapter(myArrayAdapter);	
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() Arrayadapter gesetzt.");									
+			}//end if vwList==null
 		}
 				
 		private void initialisiereListTestElemente(){
