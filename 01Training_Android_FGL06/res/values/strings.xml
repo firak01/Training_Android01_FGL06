@@ -11,12 +11,16 @@
     <string name="action_search">Meine suche</string>
     <string name="title_activity_display_message_activity_for_result">DisplayMessageActivityForResult</string>
     <string name="button_send_for_result">Send for result</string>
-    <string name="button_search_web">Search in web</string>
-    <string name="button_add_element_to_list">Add to search list</string>
+    <string name="button_search_web">Search in web</string>    
+    <string name="button_add_element_to_list">Add to list</string>
         
     <!-- Fragment Main_list -->
-    <string name="button_search_web_from_list">Search in web from list</string>
-    <string name="button_remove_from_list">Remove from search list</string>
+    <string name="button_search_web_from_list">Search all in web from list</string>
+    <string name="button_search_web_selected">Search selected in web</string>
+    
+    <string name="button_remove_from_list">Remove all from list</string>
+    <string name="button_remove_selected_from_list">Remove selected from search list</string>
+    
     <string name="label_search_web_from_list">Search list - filled from text above</string>
     <string name="element_search_web_from_list_empty">Keine Einträge</string>
 

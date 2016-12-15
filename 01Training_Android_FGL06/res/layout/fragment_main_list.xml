@@ -8,6 +8,8 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    android:scrollbarStyle="insideOverlay"
+    android:scrollbars="horizontal"
     tools:context="de.fgl.tryout.android.training001.MainActivity$PlaceholderFragmentList" >
 
     <TextView
@@ -18,22 +20,15 @@
         android:text="@string/label_search_web_from_list"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
-    <RelativeLayout
-        android:id="@+id/RelativeLayout1"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical" >
-
-        <ListView
-            android:id="@+id/list_search_web"
-            android:layout_width="fill_parent"
-            android:layout_height="192dp"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentTop="true"
-            android:choiceMode="multipleChoice"
-            android:scrollbars="vertical|horizontal" >
-        </ListView>
-    </RelativeLayout>
+    <ListView
+        android:id="@+id/list_search_web"
+        android:layout_width="fill_parent"
+        android:layout_height="182dp"
+        android:choiceMode="multipleChoice"
+        android:scrollbarAlwaysDrawVerticalTrack="false"
+        android:scrollbarStyle="insideOverlay"
+        android:scrollbars="vertical|horizontal|none" >
+    </ListView>
 
     <LinearLayout
         android:layout_width="match_parent"
