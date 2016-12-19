@@ -27,6 +27,11 @@ public class MyMessageHandler {
 	public final static String MESSAGE_ADDITION_BUNDLE=" (wiederhergestellt per Intent und Bundle)";
 	public final static String MESSAGE_ADDITION_INTENT=" (wiederhergestellt per Intent)";
 	public final static String MESSAGE_ADDITION_RESULT=" (als Result)";
+	
+	//Für den überzähligen Listeneintrag
+	public final static String MESSAGE_ADDITION_IMPLEMENT_SCROLLING = " (letzer Eintrag, per Scrollen nicht erreichbar)";
+	public final static String MESSAGE_IMPLEMENT_SCROLLING = "Maximale Anzahl für eine nicht scrollbare Liste erreicht. (Alternativlösung muss implementiert werden)";
+	
 	/**
 	 * @param message
 	 * @return

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import basic.zBasic.util.datatype.string.StringZZZ;
 import biz.tekeye.abouttest.AboutBox;
 import android.content.ClipData.Item;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -32,6 +33,7 @@ import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Aus developer.android.com Training/Building Your First App
@@ -789,23 +791,65 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 		public PlaceholderFragmentList() {
 		}
 		
-		public void addElement(String sToAdd){
+		public void addElement(String sToAddIn){
 			ArrayList<String>listatemp = this.getSearchElements();
-			listatemp.add(sToAdd);
-			this.setSearchElements(listatemp);//!! Das Zurückschreiben ist notwendig ist. Es wird ansonsten nur der aktuellste Wert in die Liste gesetzt.
+			main:{
+			if(StringZZZ.isEmpty(sToAddIn)) break main;			
+			String sToAdd = sToAddIn.trim(); //nur mit getrimmten Strings arbeiten.
+			if(StringZZZ.isEmpty(sToAdd)) break main;
 			
-			//1. Versuch: Cast Fehler. man man nicht Object[] in String[] casten  ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, (String[])listaSearchString.toArray());//Haken werden hinter den Elementen angezeigt.
-			//2. Versuch: NullPointer Exception: Attempt to get length of null Array.
-			//The toArray() method without passing any argument returns Object[]. So you have to pass an array as an argument, which will be filled with the data from the list, and returned. You can pass an empty array as well, but you can also pass an array with the desired size.
-			//String[] saTemp = listaSearchString.toArray(new String[listaSearchString.size()]);														
-			String[] saTemp = listatemp.toArray(new String[listatemp.size()]);
-			Log.d("FGLSTATE", this.getClass().getSimpleName()+".addElement() saTemp erzeugt.");
-						
-			//Füge hier den Adapter hinzu UND sorge dafür, dass die markierten Einträge auch markiert bleiben.
-			initViewItemWebSearchValueDriven(); //Merke: Das initialiesieren der Events an die ListViiew spare ich mir hier. Es muss schon vorher passiert sein in onCreateView().
+			//Eingangscheck, gibt es den Eintrag schon in der Liste.
+			if(listatemp.contains(sToAdd)){
+				Context context = this.getContext();
+				//String stext = R.string.message_element_in_list; //liefert nur einen IntegerWert zurück
+				String stext =getResources().getString(R.string.message_element_in_list);
+				int duration = Toast.LENGTH_SHORT;
+
+				CharSequence text = stext;
+				Toast toast = Toast.makeText(context, text, duration);
+				toast.show();
+				
+			}else{
 			
-			 //Steuere nun wieder die Sichtbarkeit, etc. basierend auf den Werten.
-	        initValueDriven();	//Merke: Das initialiesieren der Events an die ListViiew spare ich mir hier. Es muss schon vorher passiert sein in onCreateView().			
+			
+				//!!! FGL06: o.k. wenn man die ganze Activity Scrollbar gemacht hat, dann kann man die Listview nicht scrollen.
+				//             Dies später versuchen zu lösen.
+				//Jetzt erst ein Toast UND trotzdem (testweise) einen Begriff hinzufügen. Damit kann man mal sehen, ob es ggfs. doch irgendwann 
+				//scrollbar ist.
+				if(listatemp.size()>=4){
+					//mache den Warnhinweis Toast
+					//Context context = getApplicationContext();
+					Context context = this.getContext();
+					CharSequence text = MyMessageHandler.MESSAGE_IMPLEMENT_SCROLLING;
+					int duration = Toast.LENGTH_SHORT;
+	
+					Toast toast = Toast.makeText(context, text, duration);
+					toast.show();
+					
+					//hänge einen Hinweis an, das wird nur beim letzten Eintrag in die Liste übernommen.
+					sToAdd = sToAdd + MyMessageHandler.MESSAGE_ADDITION_IMPLEMENT_SCROLLING;
+				}
+				
+				//Übernimm den Eintrag mit dem Warnhinweis, nur, um ggfs. das Scrollen mal zu testen.
+				if(listatemp.size()<=4){
+					listatemp.add(sToAdd);
+					this.setSearchElements(listatemp);//!! Das Zurückschreiben ist notwendig ist. Es wird ansonsten nur der aktuellste Wert in die Liste gesetzt.
+					
+					//1. Versuch: Cast Fehler. man man nicht Object[] in String[] casten  ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, (String[])listaSearchString.toArray());//Haken werden hinter den Elementen angezeigt.
+					//2. Versuch: NullPointer Exception: Attempt to get length of null Array.
+					//The toArray() method without passing any argument returns Object[]. So you have to pass an array as an argument, which will be filled with the data from the list, and returned. You can pass an empty array as well, but you can also pass an array with the desired size.
+					//String[] saTemp = listaSearchString.toArray(new String[listaSearchString.size()]);														
+					String[] saTemp = listatemp.toArray(new String[listatemp.size()]);
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".addElement() saTemp erzeugt.");
+								
+					//Füge hier den Adapter hinzu UND sorge dafür, dass die markierten Einträge auch markiert bleiben.
+					initViewItemWebSearchValueDriven(); //Merke: Das initialiesieren der Events an die ListViiew spare ich mir hier. Es muss schon vorher passiert sein in onCreateView().
+					
+					 //Steuere nun wieder die Sichtbarkeit, etc. basierend auf den Werten.
+			        initValueDriven();	//Merke: Das initialiesieren der Events an die ListViiew spare ich mir hier. Es muss schon vorher passiert sein in onCreateView().
+				}//end if listaTemp.size()<=5
+			}//end if listaTemp.contains(sToAdd) 
+			}//end main:
 		}
 
 		@Override

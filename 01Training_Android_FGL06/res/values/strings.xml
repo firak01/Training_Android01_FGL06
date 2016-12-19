@@ -8,7 +8,7 @@
     <string name="title_activity_display_message">My Message with option menu</string>
     <string name="hello_world">Hello world!</string>
     <string name="hello_world_fragment">Hello world Fragmented!</string>
-    <string name="action_search">Meine suche</string>
+    <string name="action_search">My search</string>
     <string name="title_activity_display_message_activity_for_result">DisplayMessageActivityForResult</string>
     <string name="button_send_for_result">Send for result</string>
     <string name="button_search_web">Search in web</string>    
@@ -22,22 +22,24 @@
     <string name="button_remove_selected_from_list">Remove selected from search list</string>
     
     <string name="label_search_web_from_list">Search list - filled from text above</string>
-    <string name="element_search_web_from_list_empty">Keine Einträge</string>
+    <string name="element_search_web_from_list_empty">No entries</string>
+    
+    <string name="message_element_in_list">Element yet in list. Will not be added.</string>
 
     <!-- About Box -->
     <string name="action_about">About</string>
     <!-- <string name="about">This is our App, please see http://www.example.com. Email support at support@example.com.</string> -->
-    <string name="about">Projekt für Tests und TryOuts:</string>
+    <string name="about">Project for tests and tryouts:</string>
 
     <!-- Version Box -->
     <string name="action_version">Version (TXT)</string>
-    <string name="version">Historie:</string>
+    <string name="version">History:</string>
 
     <!-- Version Box - Per WebView -->
     <string name="action_version_html">Version (HTML)</string>
     <string name="version_html">Historie:</string>
     <string name="title_activity_display_webview_activty_for_version">DisplayWebviewActivtyForVersion</string>
-    <string name="title_activity_display_search_web">Web - Suchergebnis</string>
+    <string name="title_activity_display_search_web">Web - Searchresult</string>
     
     <!-- Web - Suchseite  -->
     <string name="action_print">Print</string>
