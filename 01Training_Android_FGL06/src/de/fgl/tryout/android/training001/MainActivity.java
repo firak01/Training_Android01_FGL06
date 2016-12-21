@@ -716,8 +716,34 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 					}
 				};//end new OnItemClickListener
 		
+		private ArrayList<String>findSearchElementsRelevant(){
+			ArrayList<String> listaReturn = new ArrayList<String>();
+			main:{
+			
+				//ABER: Die ListView weiss irgendwie nicht welche Items geclickt sind.
+				//Lösung: Füge einen onClick-Listener hinzu und verwalte in einer ArrayList die geclickten Werte selbst.
+				ArrayList<String> listaElement = this.getSearchElementsFromStrore();					
+				ArrayList<Integer>lista = this.getSearchElementsIndexClicked();
+				
+				//Entferne die Indices aus der Gesamtliste
+				if(lista.size()==0){
+					//A) Wenn nichts gewählt wurde, alle
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".findSearchElementsRelevant(): Übernimm alle aus der Liste.");
+					listaReturn = (ArrayList<String>) listaElement.clone();					
+				}else{
+					//B) Wenn etwas gewählt wurde nur die gewählten
+					//Verwende dies, da es bei einer einfachen For-Schleife Probleme gibt mit dem "Nächstenermitteln", wenn man den Vorgänger löscht.(index out of bounds)				
+					for(Integer intObject : lista){
+						Log.d("FGLSTATE", this.getClass().getSimpleName()+".findSearchElementsRelevant(): Übernimm aus Position '" + intObject.toString() + "'");
+						listaReturn.add(listaElement.get(intObject.intValue()));						
+					}
+				}				
+			}//end main:
+			return listaReturn;
+		}
+				
 		@SuppressWarnings({ "unchecked"})
-		private ArrayList<String>getSearchElements(){
+		private ArrayList<String>getSearchElementsFromStrore(){
 			//Für die Liste der Suchwerte, sie wird gefüllt. Wenn sie leer ist, wird ein spezieller "Leereintrag" angezeigt.
 			//Die Daten nur noch im objectStore der MainActivity halten.
 			
@@ -730,7 +756,7 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 			}
 			return listaReturn;
 		}
-		private void setSearchElements(ArrayList<String> listaSearchString){
+		private void setSearchElementsToStore(ArrayList<String> listaSearchString){
 			MyMessageStoreFGL<T> objStore = this.getMessageStore();
 			if(objStore!=null){
 				objStore.put(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT, (ArrayList<T>)listaSearchString);
@@ -792,7 +818,7 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 		}
 		
 		public void addElement(String sToAddIn){
-			ArrayList<String>listatemp = this.getSearchElements();
+			ArrayList<String>listatemp = this.getSearchElementsFromStrore();
 			main:{
 			if(StringZZZ.isEmpty(sToAddIn)) break main;			
 			String sToAdd = sToAddIn.trim(); //nur mit getrimmten Strings arbeiten.
@@ -833,7 +859,7 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 				//Übernimm den Eintrag mit dem Warnhinweis, nur, um ggfs. das Scrollen mal zu testen.
 				if(listatemp.size()<=4){
 					listatemp.add(sToAdd);
-					this.setSearchElements(listatemp);//!! Das Zurückschreiben ist notwendig ist. Es wird ansonsten nur der aktuellste Wert in die Liste gesetzt.
+					this.setSearchElementsToStore(listatemp);//!! Das Zurückschreiben ist notwendig ist. Es wird ansonsten nur der aktuellste Wert in die Liste gesetzt.
 					
 					//1. Versuch: Cast Fehler. man man nicht Object[] in String[] casten  ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, (String[])listaSearchString.toArray());//Haken werden hinter den Elementen angezeigt.
 					//2. Versuch: NullPointer Exception: Attempt to get length of null Array.
@@ -881,7 +907,7 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 				//GRUND: SERIALIZIERUNG geht nur mit expliziter Klasse, ggf. reicht auch hier ein "dreckiger" Typecast		
 				ArrayList<String> listaTemp = (ArrayList<String>) savedInstanceState.get(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT);
 				Log.d("FGLSTATE", this.getClass().getSimpleName()+".onCreateView() mit Bundle '" + listaTemp.size() + "' ArrayList SuchListen-Elementen.");
-				this.setSearchElements(listaTemp);						
+				this.setSearchElementsToStore(listaTemp);						
 			}
 								
 
@@ -942,7 +968,7 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 						
 			//GRUND: SERIALIZIERUNG geht nur mit expliziter Klasse, ggf. reicht auch hier ein "dreckiger" Typecast
 			//TODO FGL 20161203: Ändere das auf den MessageObjectStore ab
-			ArrayList<String> listaTemp = this.getSearchElements();
+			ArrayList<String> listaTemp = this.getSearchElementsFromStrore();
 			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onSaveInstanceState(): Es sind '" + listaTemp.size() + "' Elemente in der Liste.");
 			outState.putSerializable(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT, listaTemp); //liste darf nicht das Interface sein, sondern muss explizit die Klasse ArrayList sein.
 			
@@ -974,7 +1000,7 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 					//GRUND: SERIALIZIERUNG geht nur mit expliziter Klasse, ggf. reicht auch hier ein "dreckiger" Typecast		
 					ArrayList<String> listaTemp = (ArrayList<String>) objStore.get(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT);
 					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated() mit Bundle '" + listaTemp.size() + "' ArrayList SuchListen-Elementen.");
-					this.setSearchElements(listaTemp);			
+					this.setSearchElementsToStore(listaTemp);			
 				
 				if(listaTemp.isEmpty()){
 					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated() ArrayList für Elemente ist leer.");
@@ -1040,7 +1066,7 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 					
 					//ABER: Die ListView weiss irgendwie nicht welche Items geclickt sind.
 					//Lösung: Füge einen onClick-Listener hinzu und verwalte in einer ArrayList die geclickten Werte selbst.
-					ArrayList<String> listaElement = this.getSearchElements();					
+					ArrayList<String> listaElement = this.getSearchElementsFromStrore();					
 					ArrayList<Integer>lista = this.getSearchElementsIndexClicked();
 					
 					//Entferne die Indices aus der Gesamtliste
@@ -1063,8 +1089,10 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 						//Entferne diese Indexeinträge auch aus der Click-Liste					
 						lista.clear();
 					}
-					this.setSearchElements(listaElement);
+					this.setSearchElementsToStore(listaElement);
 					this.setSearchElementsIndexClicked(lista);
+					
+					
 					
 					//PROBLEM: Wie das Entfernen des Elements wieder in die Ansicht bringen.
 					//Zeige die Werte an, ... das Initialisieren der Events an die View spare ich mir hier
@@ -1086,7 +1114,42 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 			if(objStore==null){
 				Log.d("FGLSTATE", this.getClass().getSimpleName()+".sendMessageToSearchWebFromList(): KEIN STORE OBJEKT.");
 			}else{
-				Log.d("FGLSTATE", this.getClass().getSimpleName()+".sendMessageToSearchWebFromList(): STORE OBJEKT.");			
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+".sendMessageToSearchWebFromList(): STORE OBJEKT.");
+				
+				//Start an intent
+				Intent intent = new Intent(getActivity(), DisplayWebviewActivityForSearch.class);
+				
+				//Hohle alle oder nur alle ausgewählten Suchstrings aus der Liste
+				ArrayList<String>listaMessage=this.findSearchElementsRelevant();
+				
+				//Durchlaufe alle messages
+				String sMessageTotal = new String("");
+				for(String sMessage : listaMessage){
+					//Besser als das Standard String.replace und Pattern zu verwenden ist hier die JAZKernel-Hilfsklasse		
+					sMessage = MyMessageHandler.createNormedMessage(sMessage);								
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".sendMessageToSearchWeb(): message nach der Normierung = " + sMessage);
+					
+					if(sMessageTotal.equals("")){
+						sMessageTotal = sMessage;
+					}else{
+						sMessageTotal = sMessageTotal + "+" + sMessage;
+					}
+					
+				}
+								
+				//Speichere die message in eine lokale Variable. Grund: So kann man sie dann wegsichern wenn sich der State des Geräts ändert.
+				//Nein, das ist nicht notwendig, sondern das wäre die im EditFeld eingegebene Messagethis.setMessageCurrent(sMessageTotal);
+						
+				//Fülle den Store mit dem Eintrag
+				objStore.put(MyMessageHandler.RESUME_MESSAGE, sMessageTotal); //IDEE: das sollte der Wert der UI-Komponente sein, also R.id.edit_message
+					
+				//Übergib den Store als ganzes an den Intent
+				intent.putExtra(MyMessageHandler.EXTRA_STORE, objStore);//objStore muss serializable sein
+				//------------------------------
+				
+				//intent.putExtra(MyMessageHandler.EXTRA_MESSAGE, message);//Das wäre nach meiner Konvention einen Message auf oberster Ebene, ausserhalb des ObjektMessageStore.
+				startActivity(intent);		
+				
 			}
 		}
 		
@@ -1166,7 +1229,7 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 				Log.d("FGLSTATE", this.getClass().getSimpleName()+".initValueDriven(): ObjStore vorhanden.");
 				
 				//Blende nun ggfs. die verborgenen Buttons wieder ein.
-				ArrayList<String> listaTemp = this.getSearchElements(); //objStore.getArrayList(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT);
+				ArrayList<String> listaTemp = this.getSearchElementsFromStrore(); //objStore.getArrayList(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CURRENT);
 				ArrayList<Integer>listaClicked= this.getSearchElementsIndexClicked();
 				
 				//######################################
@@ -1308,13 +1371,13 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 				Log.d("FGLSTATE", this.getClass().getSimpleName()+".initViewItemWebSearchValueDriven() vwList gefunden.");
 			
 				//Zeige die Liste mit Suchelementen an.	
-				ArrayList<String> listaTemp = (ArrayList<String>) this.getSearchElements();
+				ArrayList<String> listaTemp = (ArrayList<String>) this.getSearchElementsFromStrore();
 				
 				if(listaTemp.isEmpty()){
 					Log.d("FGLSTATE", this.getClass().getSimpleName()+".initViewItemWebSearchValueDriven() ArrayList für Elemente ist leer.");
 					//Merke: Im onStart wird ein Element erstellt, dass angezeigt werden soll, wenn die Liste leer ist.
 				}else{
-					Log.d("FGLSTATE", this.getClass().getSimpleName()+".initViewItemWebSearchValueDriven() ArrayList mit Elementen ist gefüllt. Anzahl Elemente: " + getSearchElements().size());
+					Log.d("FGLSTATE", this.getClass().getSimpleName()+".initViewItemWebSearchValueDriven() ArrayList mit Elementen ist gefüllt. Anzahl Elemente: " + getSearchElementsFromStrore().size());
 				}
 										
 					//1. Versuch: Cast Fehler. man man nicht Object[] in String[] casten  ArrayAdapter<String> myArrayAdapter = new ArrayAdapter<String>(vwList.getContext(), android.R.layout.simple_list_item_checked, (String[])listaSearchString.toArray());//Haken werden hinter den Elementen angezeigt.
@@ -1363,7 +1426,7 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 		private void initialisiereListTestElemente(){
 			String[] saTest = {"eins","zwei","drei","vier","fünf"};
 			for(int icount=0; icount <= saTest.length-1; icount++){
-				this.getSearchElements().add(saTest[icount]);
+				this.getSearchElementsFromStrore().add(saTest[icount]);
 			}			
 		}				
 	}
