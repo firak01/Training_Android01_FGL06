@@ -38,14 +38,14 @@ public class DisplayMessageActivity<T> extends AppCompatActivity {
 		Log.d("FGLSTATE", this.getClass().getSimpleName()+".setMessageCurrent() für '" + message + "'");
 		MyMessageStoreFGL<T>objStore= this.getMessageStore();
 		if(objStore!=null){
-			objStore.put(MyMessageHandler.RESUME_MESSAGE, message);
+			objStore.put(MyMessageHandler.MESSAGE_RESUME, message);
 		}						
 	}
 	private String getMessageCurrent(){
 		String sReturn=new String("");
 		MyMessageStoreFGL<T>objStore= this.getMessageStore();
 		if(objStore!=null){
-			sReturn=objStore.getString(MyMessageHandler.RESUME_MESSAGE);
+			sReturn=objStore.getString(MyMessageHandler.MESSAGE_RESUME);
 		}			
 		return sReturn;			
 	}

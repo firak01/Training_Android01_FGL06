@@ -36,14 +36,14 @@ public class DisplayMessageActivityForResult<T> extends AppCompatActivity {
 		Log.d("FGLSTATE", this.getClass().getSimpleName()+".setMessageCurrent() für '" + message + "'");
 		MyMessageStoreFGL<T>objStore= this.getMessageStore();
 		if(objStore!=null){
-			objStore.put(MyMessageHandler.RESUME_MESSAGE, message);
+			objStore.put(MyMessageHandler.MESSAGE_RESUME, message);
 		}						
 	}
 	private String getMessageCurrent(){
 		String sReturn=new String("");
 		MyMessageStoreFGL<T>objStore= this.getMessageStore();
 		if(objStore!=null){
-			sReturn=objStore.getString(MyMessageHandler.RESUME_MESSAGE);
+			sReturn=objStore.getString(MyMessageHandler.MESSAGE_RESUME);
 		}			
 		return sReturn;			
 	}
@@ -220,7 +220,7 @@ public class DisplayMessageActivityForResult<T> extends AppCompatActivity {
 				}else{
 				//! Wenn das gleiche zurückgegeben wir, was reinkommt, braucht man das nicht zu holen und zurückzuschreiben.
 				Log.d("FGLSTATE",  this.getClass().getSimpleName()+".onOptionsItemSelected() - MessageCurrent ='"+ this.getMessageCurrent()+"'.");				
-				objStore.put(MyMessageHandler.RESUME_MESSAGE, this.getMessageCurrent());
+				objStore.put(MyMessageHandler.MESSAGE_RESUME, this.getMessageCurrent());
 						
 				//TODO GOON: Packe testweise eine ArrayListe hier herein, versuche diese dann entgegenzunehmen.
 	            //                    Das Ziel ist es so die ArrayListe im ListenFragment auch zu füllen.

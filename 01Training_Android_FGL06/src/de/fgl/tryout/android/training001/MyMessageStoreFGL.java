@@ -58,6 +58,14 @@ public class MyMessageStoreFGL<T> extends ObjectZZZ implements Serializable
 	public void put(String sKey, ArrayList<T> listaTemp) {
 		this.getHashMapAll().put(sKey, (T) listaTemp);
 	}
+	@SuppressWarnings("unchecked")
+	public void putArrayList(String sKey, ArrayList<T> listaTemp) {
+		this.getHashMapAll().put(sKey, (T) listaTemp);
+	}
+	@SuppressWarnings("unchecked")
+	public void putArrayListString(String sKey, ArrayList<String> listaTemp) {
+		this.getHashMapAll().put(sKey, (T) listaTemp);
+	}
 	
 	public T get(String sKey){
 		return this.getHashMapAll().get(sKey);
@@ -70,6 +78,14 @@ public class MyMessageStoreFGL<T> extends ObjectZZZ implements Serializable
 		ArrayList<T> listaReturn = (ArrayList<T>) this.getHashMapAll().get(sKey);
 		if(listaReturn==null){
 			listaReturn=new ArrayList<T>();			
+		}
+		return listaReturn;
+	}
+	@SuppressWarnings("unchecked")
+	public ArrayList<String> getArrayListString(String sKey){
+		ArrayList<String> listaReturn = (ArrayList<String>) this.getHashMapAll().get(sKey);
+		if(listaReturn==null){
+			listaReturn=new ArrayList<String>();			
 		}
 		return listaReturn;
 	}

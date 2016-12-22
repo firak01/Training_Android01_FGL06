@@ -346,7 +346,7 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 			Log.d("FGLSTATE", this.getClass().getSimpleName()+". setMessageCurrent() für '" + message + "'");
 			MyMessageStoreFGL<T> objStore = this.getMessageStore();
 			if(objStore!=null){
-				objStore.put(message, MyMessageHandler.RESUME_MESSAGE);
+				objStore.put(message, MyMessageHandler.MESSAGE_RESUME);
 			}else{
 				Log.d("FGLSTATE", this.getClass().getSimpleName()+". setMessageCurrent() findet kein Store Objekt.");
 			}					
@@ -356,7 +356,7 @@ public class MainActivity<T> extends  AppCompatActivity{ // ActionBarActivity { 
 			String sReturn = new String("");
 			MyMessageStoreFGL<T> objStore = this.getMessageStore();
 			if(objStore!=null){
-				sReturn = objStore.getString(MyMessageHandler.RESUME_MESSAGE);
+				sReturn = objStore.getString(MyMessageHandler.MESSAGE_RESUME);
 			}else{
 				Log.d("FGLSTATE", this.getClass().getSimpleName()+". getMessageCurrent() findet kein Store Objekt.");
 			}
@@ -547,8 +547,9 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 				//Mache eine Hilfsklasse, für das Wegsichern und auch wieder Zurückholen von den Intent-Informationen zwischen den Activities.
 				MyMessageStoreFGL<T> objStore = this.getMessageStore();
 					
-					//Fülle den Store mit dem Eintrag
-				objStore.put(MyMessageHandler.RESUME_MESSAGE, message); //IDEE: das sollte der Wert der UI-Komponente sein, also R.id.edit_message
+				//Fülle den Store mit dem Eintrag
+				objStore.put(MyMessageHandler.MESSAGE_RESUME, message); //IDEE: das sollte der Wert der UI-Komponente sein, also R.id.edit_message
+				objStore.put(MyMessageHandler.MESSAGE_CHOOSEN, message);
 				
 					//Übergib den Store als ganzes an den Intent
 				intent.putExtra(MyMessageHandler.EXTRA_STORE, objStore);//objStore muss serializable sein
@@ -583,10 +584,23 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 		            frgList.addElement(message);		//hier passiert also richtig viel...									
 					Log.d("FGLSTATE", this.getClass().getSimpleName()+".addElementToSearchList(): message hinzugefügt");		
 										
-					//Lösche nun den übergebenen Text aus dem Eingabefeld
-					editText.setText("");					
+					//Lösche nun den übergebenen Text aus dem Eingabefeld UND aus dem StoreObjekt
+					this.clearMessageCurrent();				
 				}
 			}//end if editText!=null
+		}
+		
+		private void clearMessageCurrent(){
+			EditText editText = (EditText) getActivity().findViewById(R.id.edit_message);
+			if(editText!=null){
+				editText.setText("");					
+			}
+			
+			MyMessageStoreFGL<T> objStore = this.getMessageStore();
+			if(objStore!=null){
+				objStore.put(MyMessageHandler.MESSAGE_RESUME, "");
+			}
+			
 		}
 		
 		/** Called when the user clicks the Send button */
@@ -608,7 +622,7 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 			MyMessageStoreFGL<T> objStore = this.getMessageStore();
 				
 				//Fülle den Store mit dem Eintrag
-			objStore.put(MyMessageHandler.RESUME_MESSAGE, message); //IDEE: das sollte der Wert der UI-Komponente sein, also R.id.edit_message
+			objStore.put(MyMessageHandler.MESSAGE_RESUME, message); //IDEE: das sollte der Wert der UI-Komponente sein, also R.id.edit_message
 			
 				//Übergib den Store als ganzes an den Intent
 			intent.putExtra(MyMessageHandler.EXTRA_STORE, objStore);//objStore muss serializable sein
@@ -636,8 +650,8 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 			//Mache eine Hilfsklasse, für das Wegsichern und auch wieder Zurückholen von den Intent-Informationen zwischen den Activities.
 			MyMessageStoreFGL<T> objStore = this.getMessageStore();
 				
-				//Fülle den Store mit dem Eintrag
-			objStore.put(MyMessageHandler.RESUME_MESSAGE, message); //IDEE: das sollte der Wert der UI-Komponente sein, also R.id.edit_message
+			//Fülle den Store mit dem Eintrag
+			objStore.put(MyMessageHandler.MESSAGE_RESUME, message); //IDEE: das sollte der Wert der UI-Komponente sein, also R.id.edit_message
 			
 				//Übergib den Store als ganzes an den Intent
 			intent.putExtra(MyMessageHandler.EXTRA_STORE, objStore);//objStore muss serializable sein
@@ -994,7 +1008,7 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 				if(objStore==null){
 					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated(): objStore ist null");
 				}else{
-					String sMessageCurrent = objStore.getString(MyMessageHandler.RESUME_MESSAGE);
+					String sMessageCurrent = objStore.getString(MyMessageHandler.MESSAGE_RESUME);
 					Log.d("FGLSTATE", this.getClass().getSimpleName()+".onActivityCreated(): sMessageCurrent = " + sMessageCurrent);				
 				
 					//GRUND: SERIALIZIERUNG geht nur mit expliziter Klasse, ggf. reicht auch hier ein "dreckiger" Typecast		
@@ -1119,9 +1133,10 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 				//Start an intent
 				Intent intent = new Intent(getActivity(), DisplayWebviewActivityForSearch.class);
 				
-				//Hohle alle oder nur alle ausgewählten Suchstrings aus der Liste
+				//Hohle alle oder nur alle ausgewählten Suchstrings aus der Liste und fülle den Store mit dem Eintrag (20161222: der wird momentan noch nicht verwendet)
 				ArrayList<String>listaMessage=this.findSearchElementsRelevant();
-				
+				objStore.putArrayListString(MyMessageHandler.KEY_ELEMENTS_TO_SEARCH_CHOOSEN, listaMessage); //IDEE: das sollte der Wert der UI-Komponente sein, also R.id.edit_message
+								
 				//Durchlaufe alle messages
 				String sMessageTotal = new String("");
 				for(String sMessage : listaMessage){
@@ -1141,7 +1156,7 @@ private void initValueDriven(MyMessageStoreFGL objStore){
 				//Nein, das ist nicht notwendig, sondern das wäre die im EditFeld eingegebene Messagethis.setMessageCurrent(sMessageTotal);
 						
 				//Fülle den Store mit dem Eintrag
-				objStore.put(MyMessageHandler.RESUME_MESSAGE, sMessageTotal); //IDEE: das sollte der Wert der UI-Komponente sein, also R.id.edit_message
+				objStore.put(MyMessageHandler.MESSAGE_CHOOSEN, sMessageTotal); //IDEE: das sollte der Wert der UI-Komponente sein, also R.id.edit_message
 					
 				//Übergib den Store als ganzes an den Intent
 				intent.putExtra(MyMessageHandler.EXTRA_STORE, objStore);//objStore muss serializable sein

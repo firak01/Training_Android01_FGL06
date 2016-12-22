@@ -211,7 +211,7 @@ public class DisplayWebviewActivityForSearch<T> extends AppCompatActivity {
 		}else{
 			//! Wenn das gleiche zurückgegeben wir, was reinkommt, braucht man das nicht zu holen und zurückzuschreiben.
 			Log.d("FGLSTATE", this.getClass().getSimpleName()+".onOptionsItemSelected() - MessageCurrent aus dem Fragment '"+ frgmain.getClass().getSimpleName()+"' - objStore ='"+ frgmain.getMessageCurrent()+"'.");				
-			objStore.put(MyMessageHandler.RESUME_MESSAGE, frgmain.getMessageCurrent());
+			objStore.put(MyMessageHandler.MESSAGE_RESUME, frgmain.getMessageCurrent());
 
 			//MERKE: Erzeuge kein neuse bundle-Objekt. Das geht verloren.
 			//intent.putExtra(MyMessageHandler.EXTRA_STORE, bundle); //So wird nix entgegengenommen	
@@ -316,7 +316,7 @@ public class DisplayWebviewActivityForSearch<T> extends AppCompatActivity {
 			Log.d("FGLSTATE", this.getClass().getSimpleName()+". setMessageCurrent() für '" + message + "'");
 			MyMessageStoreFGL<T> objStore = this.getMessageStore();
 			if(objStore!=null){
-				objStore.put(message, MyMessageHandler.RESUME_MESSAGE);
+				objStore.put(message, MyMessageHandler.MESSAGE_RESUME);
 			}else{
 				Log.d("FGLSTATE", this.getClass().getSimpleName()+". setMessageCurrent() findet kein Store Objekt.");
 			}					
@@ -326,9 +326,30 @@ public class DisplayWebviewActivityForSearch<T> extends AppCompatActivity {
 			String sReturn = new String("");
 			MyMessageStoreFGL<T> objStore = this.getMessageStore();
 			if(objStore!=null){
-				sReturn = objStore.getString(MyMessageHandler.RESUME_MESSAGE);
+				sReturn = objStore.getString(MyMessageHandler.MESSAGE_RESUME);
 			}else{
 				Log.d("FGLSTATE", this.getClass().getSimpleName()+". getMessageCurrent() findet kein Store Objekt.");
+			}
+			return sReturn;
+		}
+		
+		private void setMessageChoosen(String message) {
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+". setMessageChoosen() für '" + message + "'");
+			MyMessageStoreFGL<T> objStore = this.getMessageStore();
+			if(objStore!=null){
+				objStore.put(message, MyMessageHandler.MESSAGE_CHOOSEN);
+			}else{
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+". setMessageChoosen() findet kein Store Objekt.");
+			}					
+		}
+		private String getMessageChoosen(){					
+			Log.d("FGLSTATE", this.getClass().getSimpleName()+". setMessageChoosen() gestartet.");
+			String sReturn = new String("");
+			MyMessageStoreFGL<T> objStore = this.getMessageStore();
+			if(objStore!=null){
+				sReturn = objStore.getString(MyMessageHandler.MESSAGE_CHOOSEN);
+			}else{
+				Log.d("FGLSTATE", this.getClass().getSimpleName()+". setMessageChoosen() findet kein Store Objekt.");
 			}
 			return sReturn;
 		}
@@ -478,7 +499,9 @@ public class DisplayWebviewActivityForSearch<T> extends AppCompatActivity {
 				DisplayWebviewActivityForSearch ac = (DisplayWebviewActivityForSearch) view.getContext();
 				//cast geht nicht PlaceholderFragmentMain<T>myFragment=(PlaceholderFragmentMain<T>) ac.getFragmentManager().findFragmentById(R.id.container);
 				PlaceholderFragmentSearch<T>myFragment=this;
-				String sSearch=myFragment.getMessageCurrent();
+				//String sSearch=myFragment.getMessageCurrent();//Das ist der String für das Suchwerteingabefeld
+				String sSearch=myFragment.getMessageChoosen(); //Das ist der String für die eigentliche Suche
+				
 				Log.d("FGLSTATE", this.getClass().getSimpleName()+".initialisiereWebKit() mit Suchstring: " + sSearch);
 				
 				//ACHTUNG: Nicht Löschen... gute Beispiele...

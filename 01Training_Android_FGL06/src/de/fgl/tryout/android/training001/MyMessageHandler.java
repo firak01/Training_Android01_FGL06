@@ -13,7 +13,8 @@ public class MyMessageHandler {
 	public final static String EXTRA_STORE = "de.fgl.tryout.android.training001.MyMessageStoreFGL"; //Darunter sollen dann alle anderen Werte (ereichbar über die anderen Stringkonstanten) abgelegt sein.	
 	//public final static String EXTRA_MESSAGE = "de.fgl.tryout.android.training001.MainAcitvity.MESSAGE"; //Konvention: Das wäre eine Message auf oberster Ebene und nicht im ObjectMessageStore.
 	
-	public final static String RESUME_MESSAGE = "de.fgl.tryout.android.training001.MainAcitvity.RESUMEMESSAGE";
+	public final static String MESSAGE_RESUME = "de.fgl.tryout.android.training001.MainAcitvity.MESSAGERESUME";
+	public final static String MESSAGE_CHOOSEN= "de.fgl.tryout.android.training001.MainAcitvity.MESSAGECHOOSEN";
 	//Das ist dann beim Verwenden des MessageStore nicht mehr notwendig.
 	//Alles wird nämlich auf die gleiche Messageposition bezogen public final static String RESUME_MESSAGE_BUNDLE = "de.fgl.tryout.android.training001.MainAcitvity.RESUMEMESSAGEBUNDLE";
 	
@@ -21,6 +22,7 @@ public class MyMessageHandler {
 	public final static String KEY_MESSAGE_CURRENT="currentMessage";
 	public final static String KEY_ELEMENTS_TO_SEARCH_CURRENT="currentListToSearchElements";
 	public final static String KEY_ELEMENTS_TO_SEARCH_CLICKED="currentListToSearchElementsClicked";
+	public final static String KEY_ELEMENTS_TO_SEARCH_CHOOSEN="currentListToSearchElementsChoosen";
 	
 	//Folgende Texte werden beim Zurückkehren aus der "DisplayMessageActivity" an den Sende String gehängt. Je nachdem welcher Weg gewählt wurde.
 	public final static String MESSAGE_ADDITION_VARIABLE=" (wiederhergestellt per Variable)";
